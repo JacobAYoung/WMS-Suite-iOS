@@ -18,7 +18,7 @@ struct ProductDetailView: View {
     @State private var showingAddSale = false
     @State private var showingPushConfirmation = false
     @State private var pushTarget: ItemSource?
-    @State private var salesHistory: [SalesHistory] = []
+    @State private var salesHistory: [SalesHistoryDisplay] = []
     @State private var showingForecastDetail = false
     @State private var quickForecast: ForecastResult?
     
@@ -60,6 +60,7 @@ struct ProductDetailView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
             }
+            
             VStack(spacing: 20) {
                 // Header with source badges
                 VStack(spacing: 12) {
@@ -100,7 +101,6 @@ struct ProductDetailView: View {
                 .cornerRadius(12)
                 .padding(.horizontal)
                 
-                // Product Information
                 // Product Information
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Product Information")
@@ -289,7 +289,6 @@ struct ProductDetailView: View {
                 .padding(.horizontal)
                 
                 // Sales History
-                // Sales History
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("Sales History")
@@ -321,7 +320,32 @@ struct ProductDetailView: View {
                         .padding(.vertical, 8)
                     } else {
                         ForEach(salesHistory.prefix(3)) { sale in
-                            SalesHistoryRow(sale: sale)
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("\(sale.quantity) units")
+                                        .font(.headline)
+                                    
+                                    if let date = sale.saleDate {
+                                        Text(date.formatted(date: .abbreviated, time: .shortened))
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    if let orderNum = sale.orderNumber, !orderNum.isEmpty {
+                                        Text("Order: \(orderNum)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "cart.fill")
+                                    .foregroundColor(.green)
+                            }
+                            .padding()
+                            .background(Color(uiColor: .secondarySystemBackground))
+                            .cornerRadius(8)
                         }
                         
                         if salesHistory.count > 3 {
@@ -351,7 +375,7 @@ struct ProductDetailView: View {
             EditItemView(viewModel: viewModel, item: item, isPresented: $showingEditItem)
         }
         .sheet(isPresented: $showingAddSale) {
-            AddSalesView(item: item)
+            AddSalesView(preselectedItem: item)
                 .environment(\.managedObjectContext, viewContext)
         }
         .sheet(isPresented: $showingForecastDetail) {
@@ -372,8 +396,23 @@ struct ProductDetailView: View {
     }
     
     private func loadSalesHistory() {
-        salesHistory = SalesHistory.fetchSales(for: item, context: viewContext)
-            .filter { $0.soldQuantity > 0 } // Only show sales with quantity > 0
+        // Fetch sales that include this item using the new Sale model
+        let sales = Sale.fetchSales(for: item, context: viewContext)
+        
+        // Convert to display format
+        salesHistory = sales.compactMap { sale in
+            // Find the line item(s) for this specific item in this sale
+            guard let lineItems = sale.lineItems as? Set<SaleLineItem>,
+                  let lineItem = lineItems.first(where: { $0.item == item }) else {
+                return nil
+            }
+            
+            return SalesHistoryDisplay(
+                saleDate: sale.saleDate,
+                orderNumber: sale.orderNumber,
+                quantity: lineItem.quantity
+            )
+        }
     }
     
     private func loadQuickForecast() {
@@ -418,37 +457,3 @@ struct InfoRow: View {
         }
     }
 }
-
-// MARK: - Sales History Row
-struct SalesHistoryRow: View {
-    let sale: SalesHistory
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(sale.soldQuantity) units")
-                    .font(.headline)
-                
-                if let date = sale.saleDate {
-                    Text(date.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("Date unknown")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .italic()
-                }
-            }
-            
-            Spacer()
-            
-            Image(systemName: "cart.fill")
-                .foregroundColor(.green)
-        }
-        .padding()
-        .background(Color(uiColor: .secondarySystemBackground))
-        .cornerRadius(8)
-    }
-}
-

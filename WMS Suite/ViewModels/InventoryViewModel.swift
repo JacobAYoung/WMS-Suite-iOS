@@ -216,10 +216,11 @@ class InventoryViewModel: ObservableObject {
             throw error
         }
     }
-    
+
     // MARK: - Forecasting
     func calculateForecast(for item: InventoryItem, days: Int) async -> ForecastResult? {
         do {
+            // Fetch sales history - now returns [SalesHistoryDisplay]
             let salesHistory = try await shopifyService.fetchRecentSales(for: item)
             
             if salesHistory.isEmpty {
@@ -232,7 +233,8 @@ class InventoryViewModel: ObservableObject {
                 )
             }
             
-            let totalSold = salesHistory.reduce(0) { $0 + $1.soldQuantity }
+            // Calculate total sold from the display objects
+            let totalSold = salesHistory.reduce(0) { $0 + Int($1.quantity) }
             let averageDailySales = Double(totalSold) / Double(salesHistory.count)
             let projectedSales = averageDailySales * Double(days)
             
@@ -272,7 +274,21 @@ class InventoryViewModel: ObservableObject {
     
     // MARK: - Error Handling
     private func handleError(_ message: String, error: Error) {
-        errorMessage = "\(message): \(error.localizedDescription)"
+        let userMessage: String
+        if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet:
+                userMessage = "No internet connection"
+            case .timedOut:
+                userMessage = "Request timed out"
+            default:
+                userMessage = error.localizedDescription
+            }
+        } else {
+            userMessage = error.localizedDescription
+        }
+        
+        errorMessage = "\(message): \(userMessage)"
         showingError = true
     }
 }
