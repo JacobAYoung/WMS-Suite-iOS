@@ -5,7 +5,8 @@
         <attribute name="shopifyAccessToken" optional="YES" attributeType="String"/>
         <attribute name="shopifyStoreUrl" optional="YES" attributeType="String"/>
     </entity>
-    <entity name="InventoryItem" representedClassName="InventoryItem" parentEntity="SalesHistory" syncable="YES" codeGenerationType="class">
+    <entity name="InventoryItem" representedClassName="InventoryItem" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="imageUrl" optional="YES" attributeType="String"/>
         <attribute name="itemDescription" optional="YES" attributeType="String"/>
         <attribute name="lastSyncedQuickbooksDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -19,14 +20,21 @@
         <attribute name="sku" optional="YES" attributeType="String"/>
         <attribute name="upc" optional="YES" attributeType="String"/>
         <attribute name="webSKU" optional="YES" attributeType="String"/>
-        <relationship name="salesHistory" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SalesHistory" inverseName="inventoryItem" inverseEntity="SalesHistory"/>
+        <relationship name="saleLineItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SaleLineItem" inverseName="item" inverseEntity="SaleLineItem"/>
     </entity>
-    <entity name="SalesHistory" representedClassName="SalesHistory" syncable="YES" codeGenerationType="class">
+    <entity name="Sale" representedClassName="Sale" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="itemSKU" optional="YES" attributeType="String"/>
         <attribute name="orderNumber" optional="YES" attributeType="String"/>
         <attribute name="saleDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="soldQuantity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="inventoryItem" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="InventoryItem" inverseName="salesHistory" inverseEntity="InventoryItem"/>
+        <attribute name="totalAmount" optional="YES" attributeType="Decimal" defaultValueString="0"/>
+        <relationship name="lineItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="SaleLineItem" inverseName="sale" inverseEntity="SaleLineItem"/>
+    </entity>
+    <entity name="SaleLineItem" representedClassName="SaleLineItem" syncable="YES" codeGenerationType="class">
+        <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lineTotal" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="quantity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="unitPrice" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <relationship name="item" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="InventoryItem" inverseName="saleLineItems" inverseEntity="InventoryItem"/>
+        <relationship name="sale" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Sale" inverseName="lineItems" inverseEntity="Sale"/>
     </entity>
 </model>

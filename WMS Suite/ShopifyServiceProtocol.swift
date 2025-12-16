@@ -9,6 +9,6 @@ import Foundation
 
 protocol ShopifyServiceProtocol {
     func syncInventory(localItems: [InventoryItem], repo: InventoryRepositoryProtocol, logMismatch: @escaping (String) -> Void) async throws
-    func fetchRecentSales(for item: InventoryItem) async throws -> [SalesHistory]
+    func fetchRecentSales(for item: InventoryItem) async throws -> [SalesHistoryDisplay]
     func pushItem(_ item: InventoryItem) async throws -> String
 }

@@ -162,17 +162,26 @@ class ShopifyService: ShopifyServiceProtocol {
         print("Shopify sync completed")
     }
     
-    func fetchRecentSales(for item: InventoryItem) async throws -> [SalesHistory] {
-        var allSales: [SalesHistory] = []
+    func fetchRecentSales(for item: InventoryItem) async throws -> [SalesHistoryDisplay] {
+        var allSales: [SalesHistoryDisplay] = []
         
         // 1. Fetch local sales from Core Data
         let context = PersistenceController.shared.container.viewContext
         let localSales = try await context.perform {
-            let request = NSFetchRequest<SalesHistory>(entityName: "SalesHistory")
-            // For now, get all sales since we don't have itemSKU to filter
-            // TODO: Add itemSKU field or use relationship to filter by item
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \SalesHistory.saleDate, ascending: false)]
-            return try context.fetch(request)
+            let sales = Sale.fetchSales(for: item, context: context)
+            
+            return sales.compactMap { sale -> SalesHistoryDisplay? in
+                guard let lineItems = sale.lineItems as? Set<SaleLineItem>,
+                      let lineItem = lineItems.first(where: { $0.item == item }) else {
+                    return nil
+                }
+                
+                return SalesHistoryDisplay(
+                    saleDate: sale.saleDate,
+                    orderNumber: sale.orderNumber,
+                    quantity: lineItem.quantity
+                )
+            }
         }
         
         allSales.append(contentsOf: localSales)
@@ -183,16 +192,14 @@ class ShopifyService: ShopifyServiceProtocol {
                 let shopifySales = try await fetchShopifySales(for: item, context: context)
                 allSales.append(contentsOf: shopifySales)
             } catch {
-                // If Shopify fetch fails, just use local sales (don't throw error)
                 print("Shopify sales fetch failed: \(error.localizedDescription)")
             }
         }
         
-        // Return all sales (or empty array if none)
         return allSales
     }
 
-    private func fetchShopifySales(for item: InventoryItem, context: NSManagedObjectContext) async throws -> [SalesHistory] {
+    private func fetchShopifySales(for item: InventoryItem, context: NSManagedObjectContext) async throws -> [SalesHistoryDisplay] {
         guard let sku = item.sku else {
             return []
         }
@@ -203,7 +210,6 @@ class ShopifyService: ShopifyServiceProtocol {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(accessToken, forHTTPHeaderField: "X-Shopify-Access-Token")
         
-        // Get orders from the last 90 days
         let query = """
         {
             orders(first: 100, query: "created_at:>-90d") {
@@ -242,41 +248,37 @@ class ShopifyService: ShopifyServiceProtocol {
             throw ShopifyError.parseError
         }
         
-        var salesHistory: [SalesHistory] = []
+        var salesHistory: [SalesHistoryDisplay] = []
         
-        return try await context.perform {
-            for edge in edges {
-                guard let node = edge["node"] as? [String: Any],
-                      let createdAtString = node["createdAt"] as? String,
-                      let lineItemsDict = node["lineItems"] as? [String: Any],
-                      let lineItemEdges = lineItemsDict["edges"] as? [[String: Any]] else {
+        for edge in edges {
+            guard let node = edge["node"] as? [String: Any],
+                  let orderName = node["name"] as? String,
+                  let createdAtString = node["createdAt"] as? String,
+                  let lineItemsDict = node["lineItems"] as? [String: Any],
+                  let lineItemEdges = lineItemsDict["edges"] as? [[String: Any]] else {
+                continue
+            }
+            
+            let dateFormatter = ISO8601DateFormatter()
+            let saleDate = dateFormatter.date(from: createdAtString) ?? Date()
+            
+            for lineItemEdge in lineItemEdges {
+                guard let lineItemNode = lineItemEdge["node"] as? [String: Any],
+                      let itemSku = lineItemNode["sku"] as? String,
+                      let quantity = lineItemNode["quantity"] as? Int,
+                      itemSku == sku else {
                     continue
                 }
                 
-                // Parse date
-                let dateFormatter = ISO8601DateFormatter()
-                let saleDate = dateFormatter.date(from: createdAtString) ?? Date()
-                
-                for lineItemEdge in lineItemEdges {
-                    guard let lineItemNode = lineItemEdge["node"] as? [String: Any],
-                          let itemSku = lineItemNode["sku"] as? String,
-                          let quantity = lineItemNode["quantity"] as? Int,
-                          itemSku == sku else {
-                        continue
-                    }
-                    
-                    // Create SalesHistory object from Shopify data
-                    let sale = SalesHistory(context: context)
-                    sale.id = Int32(Date().timeIntervalSince1970 + Double(salesHistory.count)) // Unique ID
-                    sale.soldQuantity = Int32(quantity)
-                    sale.saleDate = saleDate
-                    
-                    salesHistory.append(sale)
-                }
+                salesHistory.append(SalesHistoryDisplay(
+                    saleDate: saleDate,
+                    orderNumber: orderName,
+                    quantity: Int32(quantity)
+                ))
             }
-            
-            return salesHistory
         }
+        
+        return salesHistory
     }
     
     func pushItem(_ item: InventoryItem) async throws -> String {

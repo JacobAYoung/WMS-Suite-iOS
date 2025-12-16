@@ -11,15 +11,15 @@ import CoreData
 struct SalesHistoryView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \SalesHistory.saleDate, ascending: false)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Sale.saleDate, ascending: false)],
         animation: .default)
-    private var sales: FetchedResults<SalesHistory>
+    private var sales: FetchedResults<Sale>
     
     @State private var searchText = ""
     @State private var selectedTimeframe = 0
     let timeframes = ["7 Days", "30 Days", "90 Days", "All Time"]
     
-    var filteredSales: [SalesHistory] {
+    var filteredSales: [Sale] {
         var filtered = Array(sales)
         
         // Filter by timeframe
@@ -45,18 +45,18 @@ struct SalesHistoryView: View {
             break
         }
         
-        // Filter by search text
+        // Filter by search text (search order number)
         if !searchText.isEmpty {
-            // Since we don't have itemSKU yet, we can't search by it
-            // For now, just return all
-            return filtered
+            filtered = filtered.filter { sale in
+                sale.orderNumber?.localizedCaseInsensitiveContains(searchText) ?? false
+            }
         }
         
         return filtered
     }
     
-    var totalSales: Int {
-        filteredSales.reduce(0) { $0 + Int($1.soldQuantity) }
+    var totalSales: Int32 {
+        filteredSales.reduce(0) { $0 + $1.totalQuantity }
     }
     
     var averageDailySales: Double {
@@ -86,6 +86,7 @@ struct SalesHistoryView: View {
                 HStack(spacing: 12) {
                     SummaryCard(title: "Total Sales", value: "\(totalSales)", color: .blue)
                     SummaryCard(title: "Avg/Day", value: String(format: "%.1f", averageDailySales), color: .green)
+                    SummaryCard(title: "Orders", value: "\(filteredSales.count)", color: .purple)
                 }
                 .padding(.horizontal)
                 .padding(.top)
@@ -109,7 +110,7 @@ struct SalesHistoryView: View {
                 } else {
                     List {
                         ForEach(filteredSales) { sale in
-                            SalesRow(sale: sale)
+                            SaleRowView(sale: sale)
                         }
                         .onDelete(perform: deleteSales)
                     }
@@ -159,28 +160,71 @@ struct SummaryCard: View {
     }
 }
 
-struct SalesRow: View {
-    let sale: SalesHistory
+struct SaleRowView: View {
+    let sale: Sale
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    var lineItemsArray: [SaleLineItem] {
+        guard let items = sale.lineItems as? Set<SaleLineItem> else { return [] }
+        return Array(items).sorted { ($0.item?.name ?? "") < ($1.item?.name ?? "") }
+    }
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(sale.soldQuantity) units sold")
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            // Header
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    if let orderNumber = sale.orderNumber, !orderNumber.isEmpty {
+                        Text("Order: \(orderNumber)")
+                            .font(.headline)
+                    } else {
+                        Text("Sale #\(sale.id)")
+                            .font(.headline)
+                    }
+                    
+                    if let date = sale.saleDate {
+                        Text(date, style: .date)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
-                if let date = sale.saleDate {
-                    Text(date, style: .date)
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("\(sale.totalQuantity) units")
+                        .font(.headline)
+                        .foregroundColor(.blue)
+                    
+                    Text("\(lineItemsArray.count) items")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
             
-            Spacer()
-            
-            Image(systemName: "cart.fill")
-                .foregroundColor(.blue)
-                .font(.title3)
+            // Line Items
+            if !lineItemsArray.isEmpty {
+                Divider()
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(lineItemsArray, id: \.id) { lineItem in
+                        HStack {
+                            Text(lineItem.item?.name ?? "Unknown Item")
+                                .font(.subheadline)
+                            Spacer()
+                            Text("×\(lineItem.quantity)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
+}
+
+#Preview {
+    SalesHistoryView()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
