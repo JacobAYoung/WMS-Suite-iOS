@@ -1,86 +1,60 @@
-//
-//  ContentView.swift
-//  WMS Suite
-//
-//  Created by Jacob Young on 12/6/25.
-//
-
 import SwiftUI
 import CoreData
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+    @StateObject private var viewModel: InventoryViewModel
+    @State private var selectedTab = 0
+    
+    init() {
+        let context = PersistenceController.shared.container.viewContext
+        let repo = InventoryRepository(context: context)
+        let shopifyService = ShopifyService(storeUrl: "", accessToken: "")
+        let quickbooksService = QuickBooksService(companyId: "", accessToken: "")
+        let barcodeService = BarcodeService()
+        _viewModel = StateObject(wrappedValue: InventoryViewModel(
+            repository: repo,
+            shopifyService: shopifyService,
+            quickbooksService: quickbooksService,
+            barcodeService: barcodeService
+        ))
+    }
+    
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
+        TabView(selection: $selectedTab) {
+            InventoryView(viewModel: viewModel)
+                .tabItem {
+                    Label("Inventory", systemImage: "list.bullet.rectangle")
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                .tag(0)
+            
+            BarcodeView(viewModel: viewModel)
+                .tabItem {
+                    Label("Barcodes", systemImage: "barcode")
                 }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+                .tag(1)
+            
+            CountingView(viewModel: viewModel)
+                .tabItem {
+                    Label("AI Count", systemImage: "camera")
                 }
-            }
-            Text("Select an item")
+                .tag(2)
+            
+            SettingsNavigationView(viewModel: viewModel)
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
+                .tag(3)
         }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
+        .alert("Error", isPresented: $viewModel.showingError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "An unknown error occurred")
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

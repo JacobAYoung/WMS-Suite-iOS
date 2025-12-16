@@ -6,17 +6,99 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXFileReference section */
-		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
+/* Begin PBXBuildFile section */
+		C822587A2EE9057E0028BF7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C82258732EE9057E0028BF7B /* Assets.xcassets */; };
+		C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258742EE9057E0028BF7B /* ContentView.swift */; };
+		C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */; };
+		C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */; };
+		C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48262EEE288C0088DD7D /* AddSalesView.swift */; };
+		C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */; };
+		C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */; };
+		C8CB34D72EEF216000C61FCE /* SalesHistory+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D62EEF215F00C61FCE /* SalesHistory+Extensions.swift */; };
+		C8CB34D92EEF217C00C61FCE /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D82EEF217900C61FCE /* BarcodeScannerView.swift */; };
+		C8CB34DB2EEF222200C61FCE /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34DA2EEF222000C61FCE /* ProductDetailView.swift */; };
+		C8CB34DD2EEF232100C61FCE /* QuickBooksServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34DC2EEF231F00C61FCE /* QuickBooksServiceProtocol.swift */; };
+		C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34DE2EEF232F00C61FCE /* QuickBooksService.swift */; };
+		C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34E02EEF244E00C61FCE /* SettingsNavigationView.swift */; };
+		C8CB34E32EEF246400C61FCE /* ShopifySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34E22EEF246300C61FCE /* ShopifySettingsView.swift */; };
+		C8CB34E52EEF247600C61FCE /* QuickBooksSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34E42EEF247400C61FCE /* QuickBooksSettingsView.swift */; };
+		C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34E62EEF3F9400C61FCE /* ForecastDetailView.swift */; };
+		C8CB34E92EEF416200C61FCE /* InventoryGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34E82EEF416100C61FCE /* InventoryGridView.swift */; };
+		C8CB34EB2EEF443800C61FCE /* ExportImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34EA2EEF443700C61FCE /* ExportImportService.swift */; };
+		C8CB34ED2EEF446300C61FCE /* DataManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */; };
+		C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34F02EEF664A00C61FCE /* NetworkService.swift */; };
+		C8CB34FA2EEF6CDB00C61FCE /* AppIcon.svg in Resources */ = {isa = PBXBuildFile; fileRef = C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */; };
+		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
+		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
+		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
+		C8FBB5142EEE0D4E001FC318 /* BarcodeServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5132EEE0D3F001FC318 /* BarcodeServiceProtocol.swift */; };
+		C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5152EEE0D52001FC318 /* BarcodeService.swift */; };
+		C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5172EEE0D5B001FC318 /* ShopifyServiceProtocol.swift */; };
+		C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5192EEE0D69001FC318 /* ShopifyService.swift */; };
+		C8FBB51C2EEE0D7A001FC318 /* ShopifyError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB51B2EEE0D74001FC318 /* ShopifyError.swift */; };
+		C8FBB51E2EEE0D88001FC318 /* ForecastResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB51D2EEE0D80001FC318 /* ForecastResult.swift */; };
+		C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB51F2EEE0D8C001FC318 /* BarcodeData.swift */; };
+		C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5212EEE0D96001FC318 /* InventoryViewModel.swift */; };
+		C8FBB5242EEE0DB0001FC318 /* InventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5232EEE0DA6001FC318 /* InventoryView.swift */; };
+		C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5252EEE0DB7001FC318 /* InventoryRow.swift */; };
+		C8FBB5282EEE0DC4001FC318 /* AddItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5272EEE0DBF001FC318 /* AddItemView.swift */; };
+		C8FBB52A2EEE0DCB001FC318 /* EditItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5292EEE0DC7001FC318 /* EditItemView.swift */; };
+		C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB52B2EEE0DCE001FC318 /* ForecastingView.swift */; };
+		C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB52D2EEE0DD7001FC318 /* BarcodeView.swift */; };
+		C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB52F2EEE0DDF001FC318 /* ActivityViewController.swift */; };
+		C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5312EEE0DE8001FC318 /* CountingView.swift */; };
+		C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5332EEE0DF4001FC318 /* CameraViewWrapper.swift */; };
+		C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5352EEE0DFD001FC318 /* SettingsView.swift */; };
+		C8FBB5382EEE11F5001FC318 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5372EEE11F2001FC318 /* CameraManager.swift */; };
+/* End PBXBuildFile section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		C89984992EE4CFE500B6661C /* WMS Suite */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "WMS Suite";
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
+/* Begin PBXFileReference section */
+		C82258732EE9057E0028BF7B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C82258742EE9057E0028BF7B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WMS_SuiteApp.swift; sourceTree = "<group>"; };
+		C82258792EE9057E0028BF7B /* WMS_Suite.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WMS_Suite.xcdatamodel; sourceTree = "<group>"; };
+		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8AC48262EEE288C0088DD7D /* AddSalesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSalesView.swift; sourceTree = "<group>"; };
+		C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryView.swift; sourceTree = "<group>"; };
+		C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InventoryItem+Extensions.swift"; sourceTree = "<group>"; };
+		C8CB34D62EEF215F00C61FCE /* SalesHistory+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SalesHistory+Extensions.swift"; sourceTree = "<group>"; };
+		C8CB34D82EEF217900C61FCE /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
+		C8CB34DA2EEF222000C61FCE /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
+		C8CB34DC2EEF231F00C61FCE /* QuickBooksServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksServiceProtocol.swift; sourceTree = "<group>"; };
+		C8CB34DE2EEF232F00C61FCE /* QuickBooksService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksService.swift; sourceTree = "<group>"; };
+		C8CB34E02EEF244E00C61FCE /* SettingsNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationView.swift; sourceTree = "<group>"; };
+		C8CB34E22EEF246300C61FCE /* ShopifySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifySettingsView.swift; sourceTree = "<group>"; };
+		C8CB34E42EEF247400C61FCE /* QuickBooksSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksSettingsView.swift; sourceTree = "<group>"; };
+		C8CB34E62EEF3F9400C61FCE /* ForecastDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastDetailView.swift; sourceTree = "<group>"; };
+		C8CB34E82EEF416100C61FCE /* InventoryGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryGridView.swift; sourceTree = "<group>"; };
+		C8CB34EA2EEF443700C61FCE /* ExportImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportImportService.swift; sourceTree = "<group>"; };
+		C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementView.swift; sourceTree = "<group>"; };
+		C8CB34F02EEF664A00C61FCE /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppIcon.svg; sourceTree = "<group>"; };
+		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
+		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
+		C8FBB5132EEE0D3F001FC318 /* BarcodeServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeServiceProtocol.swift; sourceTree = "<group>"; };
+		C8FBB5152EEE0D52001FC318 /* BarcodeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeService.swift; sourceTree = "<group>"; };
+		C8FBB5172EEE0D5B001FC318 /* ShopifyServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyServiceProtocol.swift; sourceTree = "<group>"; };
+		C8FBB5192EEE0D69001FC318 /* ShopifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyService.swift; sourceTree = "<group>"; };
+		C8FBB51B2EEE0D74001FC318 /* ShopifyError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyError.swift; sourceTree = "<group>"; };
+		C8FBB51D2EEE0D80001FC318 /* ForecastResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastResult.swift; sourceTree = "<group>"; };
+		C8FBB51F2EEE0D8C001FC318 /* BarcodeData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeData.swift; sourceTree = "<group>"; };
+		C8FBB5212EEE0D96001FC318 /* InventoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryViewModel.swift; sourceTree = "<group>"; };
+		C8FBB5232EEE0DA6001FC318 /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
+		C8FBB5252EEE0DB7001FC318 /* InventoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRow.swift; sourceTree = "<group>"; };
+		C8FBB5272EEE0DBF001FC318 /* AddItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemView.swift; sourceTree = "<group>"; };
+		C8FBB5292EEE0DC7001FC318 /* EditItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditItemView.swift; sourceTree = "<group>"; };
+		C8FBB52B2EEE0DCE001FC318 /* ForecastingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForecastingView.swift; sourceTree = "<group>"; };
+		C8FBB52D2EEE0DD7001FC318 /* BarcodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeView.swift; sourceTree = "<group>"; };
+		C8FBB52F2EEE0DDF001FC318 /* ActivityViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewController.swift; sourceTree = "<group>"; };
+		C8FBB5312EEE0DE8001FC318 /* CountingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountingView.swift; sourceTree = "<group>"; };
+		C8FBB5332EEE0DF4001FC318 /* CameraViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraViewWrapper.swift; sourceTree = "<group>"; };
+		C8FBB5352EEE0DFD001FC318 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C8FBB5372EEE11F2001FC318 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		C8FBB53D2EEE1F2A001FC318 /* WMS-Suite-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "WMS-Suite-Info.plist"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		C89984942EE4CFE500B6661C /* Frameworks */ = {
@@ -29,10 +111,62 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C82258782EE9057E0028BF7B /* WMS Suite */ = {
+			isa = PBXGroup;
+			children = (
+				C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */,
+				C8CB34F82EEF6B3100C61FCE /* Extensions */,
+				C8CB34F72EEF6B2200C61FCE /* Utilities */,
+				C8CB34F62EEF6B1D00C61FCE /* Repositories */,
+				C8CB34F52EEF6B1200C61FCE /* Services */,
+				C8CB34F42EEF6B0400C61FCE /* ViewModels */,
+				C8CB34F32EEF6AFF00C61FCE /* Views */,
+				C8CB34F22EEF6AF400C61FCE /* Models */,
+				C8CB34E22EEF246300C61FCE /* ShopifySettingsView.swift */,
+				C8CB34E02EEF244E00C61FCE /* SettingsNavigationView.swift */,
+				C8CB34DE2EEF232F00C61FCE /* QuickBooksService.swift */,
+				C8CB34DC2EEF231F00C61FCE /* QuickBooksServiceProtocol.swift */,
+				C8CB34DA2EEF222000C61FCE /* ProductDetailView.swift */,
+				C8CB34D82EEF217900C61FCE /* BarcodeScannerView.swift */,
+				C8CB34D62EEF215F00C61FCE /* SalesHistory+Extensions.swift */,
+				C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */,
+				C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */,
+				C8AC48262EEE288C0088DD7D /* AddSalesView.swift */,
+				C8FBB53D2EEE1F2A001FC318 /* WMS-Suite-Info.plist */,
+				C8FBB5372EEE11F2001FC318 /* CameraManager.swift */,
+				C8FBB5352EEE0DFD001FC318 /* SettingsView.swift */,
+				C8FBB5332EEE0DF4001FC318 /* CameraViewWrapper.swift */,
+				C8FBB5312EEE0DE8001FC318 /* CountingView.swift */,
+				C8FBB52F2EEE0DDF001FC318 /* ActivityViewController.swift */,
+				C8FBB52D2EEE0DD7001FC318 /* BarcodeView.swift */,
+				C8FBB52B2EEE0DCE001FC318 /* ForecastingView.swift */,
+				C8FBB5292EEE0DC7001FC318 /* EditItemView.swift */,
+				C8FBB5272EEE0DBF001FC318 /* AddItemView.swift */,
+				C8FBB5252EEE0DB7001FC318 /* InventoryRow.swift */,
+				C8FBB5232EEE0DA6001FC318 /* InventoryView.swift */,
+				C8FBB5212EEE0D96001FC318 /* InventoryViewModel.swift */,
+				C8FBB51F2EEE0D8C001FC318 /* BarcodeData.swift */,
+				C8FBB51D2EEE0D80001FC318 /* ForecastResult.swift */,
+				C8FBB51B2EEE0D74001FC318 /* ShopifyError.swift */,
+				C8FBB5192EEE0D69001FC318 /* ShopifyService.swift */,
+				C8FBB5172EEE0D5B001FC318 /* ShopifyServiceProtocol.swift */,
+				C8FBB5152EEE0D52001FC318 /* BarcodeService.swift */,
+				C8FBB5132EEE0D3F001FC318 /* BarcodeServiceProtocol.swift */,
+				C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */,
+				C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */,
+				C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */,
+				C82258732EE9057E0028BF7B /* Assets.xcassets */,
+				C82258742EE9057E0028BF7B /* ContentView.swift */,
+				C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */,
+				C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */,
+			);
+			path = "WMS Suite";
+			sourceTree = "<group>";
+		};
 		C899848E2EE4CFE500B6661C = {
 			isa = PBXGroup;
 			children = (
-				C89984992EE4CFE500B6661C /* WMS Suite */,
+				C82258782EE9057E0028BF7B /* WMS Suite */,
 				C89984982EE4CFE500B6661C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +177,61 @@
 				C89984972EE4CFE500B6661C /* WMS Suite.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C8CB34F22EEF6AF400C61FCE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */,
+				C8CB34E62EEF3F9400C61FCE /* ForecastDetailView.swift */,
+				C8CB34E42EEF247400C61FCE /* QuickBooksSettingsView.swift */,
+				C8CB34E82EEF416100C61FCE /* InventoryGridView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C8CB34F42EEF6B0400C61FCE /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		C8CB34F52EEF6B1200C61FCE /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				C8CB34F02EEF664A00C61FCE /* NetworkService.swift */,
+				C8CB34EA2EEF443700C61FCE /* ExportImportService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		C8CB34F62EEF6B1D00C61FCE /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
+		C8CB34F72EEF6B2200C61FCE /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		C8CB34F82EEF6B3100C61FCE /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,9 +248,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				C89984992EE4CFE500B6661C /* WMS Suite */,
 			);
 			name = "WMS Suite";
 			packageProductDependencies = (
@@ -109,6 +295,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C822587A2EE9057E0028BF7B /* Assets.xcassets in Resources */,
+				C8CB34FA2EEF6CDB00C61FCE /* AppIcon.svg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +307,47 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8CB34DB2EEF222200C61FCE /* ProductDetailView.swift in Sources */,
+				C8CB34D92EEF217C00C61FCE /* BarcodeScannerView.swift in Sources */,
+				C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */,
+				C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */,
+				C8FBB51C2EEE0D7A001FC318 /* ShopifyError.swift in Sources */,
+				C8CB34D72EEF216000C61FCE /* SalesHistory+Extensions.swift in Sources */,
+				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
+				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
+				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
+				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
+				C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */,
+				C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */,
+				C8FBB5382EEE11F5001FC318 /* CameraManager.swift in Sources */,
+				C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */,
+				C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */,
+				C8FBB51E2EEE0D88001FC318 /* ForecastResult.swift in Sources */,
+				C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */,
+				C8FBB5282EEE0DC4001FC318 /* AddItemView.swift in Sources */,
+				C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */,
+				C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */,
+				C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */,
+				C8CB34EB2EEF443800C61FCE /* ExportImportService.swift in Sources */,
+				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,
+				C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */,
+				C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */,
+				C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */,
+				C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */,
+				C8FBB5242EEE0DB0001FC318 /* InventoryView.swift in Sources */,
+				C8CB34DD2EEF232100C61FCE /* QuickBooksServiceProtocol.swift in Sources */,
+				C8CB34E52EEF247600C61FCE /* QuickBooksSettingsView.swift in Sources */,
+				C8CB34ED2EEF446300C61FCE /* DataManagementView.swift in Sources */,
+				C8CB34E32EEF246400C61FCE /* ShopifySettingsView.swift in Sources */,
+				C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */,
+				C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */,
+				C8FBB52A2EEE0DCB001FC318 /* EditItemView.swift in Sources */,
+				C8FBB5142EEE0D4E001FC318 /* BarcodeServiceProtocol.swift in Sources */,
+				C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */,
+				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
+				C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */,
+				C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */,
+				C8CB34E92EEF416200C61FCE /* InventoryGridView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,6 +485,9 @@
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WMS-Suite-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to count inventory items";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access for saving barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +516,9 @@
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WMS-Suite-Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to count inventory items";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access for saving barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -324,6 +559,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				C82258792EE9057E0028BF7B /* WMS_Suite.xcdatamodel */,
+			);
+			currentVersion = C82258792EE9057E0028BF7B /* WMS_Suite.xcdatamodel */;
+			path = WMS_Suite.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = C899848F2EE4CFE500B6661C /* Project object */;
 }

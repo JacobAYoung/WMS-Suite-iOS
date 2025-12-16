@@ -1,0 +1,454 @@
+//
+//  ProductDetailView.swift
+//  WMS Suite
+//
+//  Created by Jacob Young on 12/14/25.
+//
+
+import SwiftUI
+import CoreData
+
+struct ProductDetailView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var viewModel: InventoryViewModel
+    let item: InventoryItem
+    
+    @State private var showingEditItem = false
+    @State private var showingAddSale = false
+    @State private var showingPushConfirmation = false
+    @State private var pushTarget: ItemSource?
+    @State private var salesHistory: [SalesHistory] = []
+    @State private var showingForecastDetail = false
+    @State private var quickForecast: ForecastResult?
+    
+    var body: some View {
+        ScrollView {
+            // Product Image
+            if let imageUrl = item.displayImageUrl {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(height: 200)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: 250)
+                            .cornerRadius(12)
+                    case .failure:
+                        Image(systemName: "photo")
+                            .font(.system(size: 60))
+                            .foregroundColor(.gray)
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(12)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .padding(.horizontal)
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 60))
+                    .foregroundColor(.gray)
+                    .frame(height: 200)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+            }
+            VStack(spacing: 20) {
+                // Header with source badges
+                VStack(spacing: 12) {
+                    Text(item.name ?? "Unknown Item")
+                        .font(.title)
+                        .bold()
+                    
+                    // Source badges
+                    HStack(spacing: 8) {
+                        ForEach(item.itemSources, id: \.self) { source in
+                            HStack(spacing: 4) {
+                                Image(systemName: source.iconName)
+                                Text(source.rawValue)
+                            }
+                            .font(.caption)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(source.color.opacity(0.2))
+                            .foregroundColor(source.color)
+                            .cornerRadius(15)
+                        }
+                    }
+                    
+                    // Sync status indicators
+                    if item.needsShopifySync || item.needsQuickBooksSync {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                            Text("Needs Sync")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                    }
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(12)
+                .padding(.horizontal)
+                
+                // Product Information
+                // Product Information
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Product Information")
+                        .font(.headline)
+                    
+                    InfoRow(label: "SKU", value: item.sku ?? "N/A")
+                    
+                    if let webSKU = item.webSKU, !webSKU.isEmpty {
+                        InfoRow(label: "Web SKU", value: webSKU)
+                    }
+                    
+                    if let upc = item.upc, !upc.isEmpty {
+                        InfoRow(label: "UPC", value: upc)
+                    }
+                    
+                    InfoRow(label: "Quantity", value: "\(item.quantity)")
+                    
+                    if item.minStockLevel > 0 {
+                        InfoRow(label: "Min Stock Level", value: "\(item.minStockLevel)")
+                    }
+                    
+                    if let description = item.itemDescription, !description.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Description")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Text(description)
+                                .font(.body)
+                        }
+                    }
+                    
+                    if let lastUpdated = item.lastUpdated {
+                        InfoRow(label: "Last Updated", value: lastUpdated.formatted(date: .abbreviated, time: .shortened))
+                    }
+                }
+                .padding()
+                .background(Color(uiColor: .systemBackground))
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.1), radius: 2)
+                .padding(.horizontal)
+                
+                // Action Buttons
+                VStack(spacing: 12) {
+                    Text("Actions")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Button(action: { showingEditItem = true }) {
+                        HStack {
+                            Image(systemName: "pencil")
+                            Text("Edit Item")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(10)
+                    }
+                    
+                    Button(action: { showingAddSale = true }) {
+                        HStack {
+                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Text("Add Sale")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green.opacity(0.1))
+                        .foregroundColor(.green)
+                        .cornerRadius(10)
+                    }
+                    
+                    // Push to Shopify
+                    Button(action: {
+                        pushTarget = .shopify
+                        showingPushConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "cart.fill")
+                            Text(item.existsIn(.shopify) ? "Update in Shopify" : "Push to Shopify")
+                            Spacer()
+                            if item.needsShopifySync {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundColor(.orange)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green.opacity(0.1))
+                        .foregroundColor(.green)
+                        .cornerRadius(10)
+                    }
+                    
+                    // Push to QuickBooks
+                    Button(action: {
+                        pushTarget = .quickbooks
+                        showingPushConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "book.fill")
+                            Text(item.existsIn(.quickbooks) ? "Update in QuickBooks" : "Push to QuickBooks")
+                            Spacer()
+                            if item.needsQuickBooksSync {
+                                Image(systemName: "exclamationmark.circle.fill")
+                                    .foregroundColor(.orange)
+                            }
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.orange.opacity(0.1))
+                        .foregroundColor(.orange)
+                        .cornerRadius(10)
+                    }
+                }
+                .padding()
+                .background(Color(uiColor: .systemBackground))
+                .cornerRadius(12)
+                .shadow(radius: 2)
+                .padding(.horizontal)
+                
+                // Forecasting Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Forecast")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: { showingForecastDetail = true }) {
+                            HStack {
+                                Text("View Details")
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    
+                    if let forecast = quickForecast {
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("Avg Daily Sales:")
+                                Spacer()
+                                Text(String(format: "%.1f units/day", forecast.averageDailySales))
+                                    .bold()
+                            }
+                            
+                            HStack {
+                                Text("Days Until Stockout:")
+                                Spacer()
+                                Text("\(forecast.daysUntilStockout) days")
+                                    .bold()
+                                    .foregroundColor(forecast.daysUntilStockout < 7 ? .red : .primary)
+                            }
+                        }
+                        .font(.subheadline)
+                    } else {
+                        VStack {
+                            Text("No sales data available")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Button(action: { showingForecastDetail = true }) {
+                                Text("View Forecast Details")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                            }
+                            .padding(.top, 4)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    }
+                }
+                .padding()
+                .background(Color(uiColor: .systemBackground))
+                .cornerRadius(12)
+                .shadow(radius: 2)
+                .padding(.horizontal)
+                
+                // Sales History
+                // Sales History
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Sales History")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: { showingAddSale = true }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Add Sale")
+                            }
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                        }
+                    }
+                    
+                    if salesHistory.isEmpty {
+                        VStack(spacing: 8) {
+                            Text("No sales recorded")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Button(action: { showingAddSale = true }) {
+                                Text("Record First Sale")
+                                    .font(.subheadline)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                    } else {
+                        ForEach(salesHistory.prefix(3)) { sale in
+                            SalesHistoryRow(sale: sale)
+                        }
+                        
+                        if salesHistory.count > 3 {
+                            Text("Showing 3 of \(salesHistory.count) sales")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 4)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(uiColor: .systemBackground))
+                .cornerRadius(12)
+                .shadow(radius: 2)
+                .padding(.horizontal)
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Product Details")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            loadSalesHistory()
+            loadQuickForecast()
+        }
+        .sheet(isPresented: $showingEditItem) {
+            EditItemView(viewModel: viewModel, item: item, isPresented: $showingEditItem)
+        }
+        .sheet(isPresented: $showingAddSale) {
+            AddSalesView(item: item)
+                .environment(\.managedObjectContext, viewContext)
+        }
+        .sheet(isPresented: $showingForecastDetail) {
+            ForecastDetailView(viewModel: viewModel, item: item)
+        }
+        .alert("Push to \(pushTarget?.rawValue ?? "")?", isPresented: $showingPushConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Push") {
+                if let target = pushTarget {
+                    pushToService(target)
+                }
+            }
+        } message: {
+            if let target = pushTarget {
+                Text("This will \(item.existsIn(target) ? "update" : "create") this item in \(target.rawValue).")
+            }
+        }
+    }
+    
+    private func loadSalesHistory() {
+        salesHistory = SalesHistory.fetchSales(for: item, context: viewContext)
+            .filter { $0.soldQuantity > 0 } // Only show sales with quantity > 0
+    }
+    
+    private func loadQuickForecast() {
+        Task {
+            quickForecast = await viewModel.calculateForecast(for: item, days: 30)
+        }
+    }
+    
+    private func pushToService(_ service: ItemSource) {
+        Task {
+            do {
+                switch service {
+                case .shopify:
+                    try await viewModel.pushToShopify(item: item)
+                case .quickbooks:
+                    try await viewModel.pushToQuickBooks(item: item)
+                case .local:
+                    break // Local is always present
+                }
+            } catch {
+                // Error handling will be in ViewModel
+                print("Error pushing to \(service.rawValue): \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - Info Row Component
+struct InfoRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.body)
+                .bold()
+        }
+    }
+}
+
+// MARK: - Sales History Row
+struct SalesHistoryRow: View {
+    let sale: SalesHistory
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(sale.soldQuantity) units")
+                    .font(.headline)
+                
+                if let date = sale.saleDate {
+                    Text(date.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Date unknown")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .italic()
+                }
+            }
+            
+            Spacer()
+            
+            Image(systemName: "cart.fill")
+                .foregroundColor(.green)
+        }
+        .padding()
+        .background(Color(uiColor: .secondarySystemBackground))
+        .cornerRadius(8)
+    }
+}
+

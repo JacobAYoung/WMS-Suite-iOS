@@ -1,0 +1,49 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="boxGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#bgGradient)"/>
+  
+  <!-- Box stack (warehouse boxes) -->
+  <!-- Bottom box -->
+  <rect x="312" y="600" width="400" height="280" rx="20" fill="url(#boxGradient)" opacity="0.9"/>
+  <rect x="312" y="600" width="400" height="60" rx="20" fill="#1e40af" opacity="0.5"/>
+  <line x1="512" y1="600" x2="512" y2="880" stroke="#1e3a8a" stroke-width="4"/>
+  <line x1="312" y1="740" x2="712" y2="740" stroke="#1e3a8a" stroke-width="3"/>
+  
+  <!-- Middle box -->
+  <rect x="362" y="380" width="300" height="240" rx="16" fill="url(#boxGradient)" opacity="0.95"/>
+  <rect x="362" y="380" width="300" height="50" rx="16" fill="#1e40af" opacity="0.5"/>
+  <line x1="512" y1="380" x2="512" y2="620" stroke="#1e3a8a" stroke-width="3"/>
+  <line x1="362" y1="500" x2="662" y2="500" stroke="#1e3a8a" stroke-width="3"/>
+  
+  <!-- Top box -->
+  <rect x="412" y="200" width="200" height="200" rx="12" fill="url(#boxGradient)"/>
+  <rect x="412" y="200" width="200" height="40" rx="12" fill="#1e40af" opacity="0.5"/>
+  <line x1="512" y1="200" x2="512" y2="400" stroke="#1e3a8a" stroke-width="2"/>
+  <line x1="412" y1="300" x2="612" y2="300" stroke="#1e3a8a" stroke-width="2"/>
+  
+  <!-- Barcode accent on top box -->
+  <rect x="442" y="260" width="8" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="458" y="260" width="12" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="478" y="260" width="6" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="492" y="260" width="14" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="514" y="260" width="10" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="532" y="260" width="8" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="548" y="260" width="12" height="80" rx="2" fill="white" opacity="0.9"/>
+  <rect x="568" y="260" width="14" height="80" rx="2" fill="white" opacity="0.9"/>
+  
+  <!-- Checkmark badge -->
+  <circle cx="780" cy="280" r="100" fill="#10b981" opacity="0.95"/>
+  <path d="M 730 280 L 760 310 L 830 240" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
