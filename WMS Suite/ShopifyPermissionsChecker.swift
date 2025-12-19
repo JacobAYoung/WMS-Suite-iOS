@@ -2,7 +2,7 @@
 //  ShopifyPermissionsChecker.swift
 //  WMS Suite
 //
-//  FIXED: Properly checks write permissions
+//  Updated: Added read_fulfillments permission for tracking
 //
 
 import SwiftUI
@@ -60,6 +60,13 @@ class ShopifyPermissionsChecker {
                 name: "Read Orders",
                 scope: "read_orders",
                 description: "View order history",
+                isEnabled: false
+            ),
+            // ✅ NEW: Added for fulfillment tracking
+            ShopifyPermission(
+                name: "Read Fulfillments",
+                scope: "read_fulfillments",
+                description: "View shipping and tracking information",
                 isEnabled: false
             )
         ]

@@ -82,14 +82,15 @@ struct InventoryView: View {
             .sheet(isPresented: $showingAddItem) {
                 AddItemView(viewModel: viewModel, isPresented: $showingAddItem)
             }
-            // ADD THE SYNC ALERT
             .alert("Sync Status", isPresented: $viewModel.showingSyncAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(viewModel.syncMessage)
             }
-            .onAppear {
-                refreshData()
+            // ✅ FIXED: Removed .onAppear { refreshData() }
+            // Now only refreshes on manual button press or pull-to-refresh
+            .refreshable {
+                await refreshDataAsync()
             }
         }
     }
@@ -119,6 +120,16 @@ struct InventoryView: View {
     private func refreshData() {
         // Call the ACTUAL method that exists in ViewModel
         viewModel.syncWithShopify()
+    }
+    
+    private func refreshDataAsync() async {
+        // For pull-to-refresh gesture
+        viewModel.syncWithShopify()
+        
+        // Wait for sync to complete
+        while viewModel.isLoading {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+        }
     }
     
     private func deleteItems(at offsets: IndexSet) {

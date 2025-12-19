@@ -2,7 +2,7 @@
 //  ProductDetailView.swift
 //  WMS Suite
 //
-//  Complete implementation with Shopify permission checks
+//  FIXED: Refreshes sales history when returning from AddSalesView
 //
 
 import SwiftUI
@@ -21,11 +21,11 @@ struct ProductDetailView: View {
     @State private var salesHistory: [SalesHistoryDisplay] = []
     @State private var showingForecastDetail = false
     @State private var quickForecast: ForecastResult?
+    @State private var refreshTrigger = false  // ✅ NEW: Trigger for refresh
     
     // MARK: - Computed Properties
     
     private var canSyncToShopify: Bool {
-        // Check if Shopify is configured
         let storeUrl = UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? ""
         let accessToken = UserDefaults.standard.string(forKey: "shopifyAccessToken") ?? ""
         
@@ -33,7 +33,6 @@ struct ProductDetailView: View {
             return false
         }
         
-        // Check if write permissions are enabled
         let canWrite = UserDefaults.standard.bool(forKey: "shopify_canWriteInventory")
         return canWrite
     }
@@ -49,22 +48,11 @@ struct ProductDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Product Image
                 productImageSection
-                
-                // Header with source badges
                 headerSection
-                
-                // Product Information
                 productInfoSection
-                
-                // Action Buttons
                 actionButtonsSection
-                
-                // Forecasting Section
                 forecastSection
-                
-                // Sales History
                 salesHistorySection
             }
             .padding(.vertical)
@@ -74,6 +62,20 @@ struct ProductDetailView: View {
         .onAppear {
             loadSalesHistory()
             loadQuickForecast()
+        }
+        // ✅ NEW: Refresh when returning from sheets
+        .onChange(of: showingAddSale) { isShowing in
+            if !isShowing {
+                // Sheet was dismissed, refresh data
+                loadSalesHistory()
+                loadQuickForecast()
+            }
+        }
+        .onChange(of: showingEditItem) { isShowing in
+            if !isShowing {
+                // Sheet was dismissed, refresh data
+                loadSalesHistory()
+            }
         }
         .sheet(isPresented: $showingEditItem) {
             EditItemView(viewModel: viewModel, item: item, isPresented: $showingEditItem)
@@ -145,7 +147,6 @@ struct ProductDetailView: View {
                 .font(.title)
                 .bold()
             
-            // Source badges
             HStack(spacing: 8) {
                 ForEach(item.itemSources, id: \.self) { source in
                     HStack(spacing: 4) {
@@ -161,7 +162,6 @@ struct ProductDetailView: View {
                 }
             }
             
-            // Sync status indicators
             if item.needsShopifySync || item.needsQuickBooksSync {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -235,10 +235,8 @@ struct ProductDetailView: View {
                 ActionButtonContent(icon: "chart.line.uptrend.xyaxis", text: "Add Sale", color: .green)
             }
             
-            // SHOPIFY SYNC WITH PERMISSION CHECK
             shopifySyncButton
             
-            // QUICKBOOKS SYNC
             Button(action: {
                 pushTarget = .quickbooks
                 showingPushConfirmation = true
@@ -271,7 +269,6 @@ struct ProductDetailView: View {
     private var shopifySyncButton: some View {
         Group {
             if !shopifyConfigured {
-                // Shopify not configured at all
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Shopify Not Configured", systemImage: "info.circle")
                         .foregroundColor(.blue)
@@ -291,7 +288,6 @@ struct ProductDetailView: View {
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(10)
             } else if canSyncToShopify {
-                // Has permission - show sync button
                 Button(action: {
                     pushTarget = .shopify
                     showingPushConfirmation = true
@@ -322,7 +318,6 @@ struct ProductDetailView: View {
                         .padding(.leading)
                 }
             } else {
-                // Configured but no write permission
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -509,12 +504,9 @@ struct ProductDetailView: View {
     // MARK: - Helper Methods
     
     private func loadSalesHistory() {
-        // Fetch sales that include this item using the new Sale model
         let sales = Sale.fetchSales(for: item, context: viewContext)
         
-        // Convert to display format
         salesHistory = sales.compactMap { sale in
-            // Find the line item(s) for this specific item in this sale
             guard let lineItems = sale.lineItems as? Set<SaleLineItem>,
                   let lineItem = lineItems.first(where: { $0.item == item }) else {
                 return nil
@@ -543,10 +535,9 @@ struct ProductDetailView: View {
                 case .quickbooks:
                     try await viewModel.pushToQuickBooks(item: item)
                 case .local:
-                    break // Local is always present
+                    break
                 }
             } catch {
-                // Error handling will be in ViewModel
                 print("Error pushing to \(service.rawValue): \(error)")
             }
         }

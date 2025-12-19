@@ -22,13 +22,30 @@
         <attribute name="webSKU" optional="YES" attributeType="String"/>
         <relationship name="saleLineItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SaleLineItem" inverseName="item" inverseEntity="SaleLineItem"/>
     </entity>
+    <entity name="OrderNote" representedClassName="OrderNote" syncable="YES" codeGenerationType="class">
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="noteText" attributeType="String"/>
+        <attribute name="noteType" attributeType="String"/>
+        <attribute name="userName" optional="YES" attributeType="String"/>
+        <relationship name="sale" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Sale" inverseName="notes" inverseEntity="Sale"/>
+    </entity>
     <entity name="Sale" representedClassName="Sale" syncable="YES" codeGenerationType="class">
+        <attribute name="carrier" optional="YES" attributeType="String"/>
+        <attribute name="deliveredDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fulfillmentStatus" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="isPriority" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="lastTrackingUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="needsAttention" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="orderNumber" optional="YES" attributeType="String"/>
         <attribute name="saleDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="shippedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="source" optional="YES" attributeType="String"/>
         <attribute name="totalAmount" optional="YES" attributeType="Decimal" defaultValueString="0"/>
+        <attribute name="trackingNumber" optional="YES" attributeType="String"/>
         <relationship name="lineItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="SaleLineItem" inverseName="sale" inverseEntity="SaleLineItem"/>
+        <relationship name="notes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="OrderNote" inverseName="sale" inverseEntity="OrderNote"/>
     </entity>
     <entity name="SaleLineItem" representedClassName="SaleLineItem" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>

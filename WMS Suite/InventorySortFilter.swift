@@ -3,6 +3,7 @@
 //  WMS Suite
 //
 //  Sorting and filtering options for inventory
+//  FIXED: Changed photo.badge.minus to photo.badge.plus
 //
 
 import Foundation
@@ -118,7 +119,7 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
         case .hasImage:
             return "photo"
         case .noImage:
-            return "photo.badge.minus"
+            return "photo.badge.plus" 
         }
     }
     

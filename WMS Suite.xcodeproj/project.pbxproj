@@ -41,6 +41,11 @@
 		C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351B2EF5054600C61FCE /* OrderRow.swift */; };
 		C8CB351E2EF5055900C61FCE /* OrderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */; };
 		C8CB35202EF5058600C61FCE /* OrdersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351F2EF5058600C61FCE /* OrdersView.swift */; };
+		C8CB35242EF5FAE600C61FCE /* Sale+fulfillmentextensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35232EF5FAD800C61FCE /* Sale+fulfillmentextensions.swift */; };
+		C8CB35282EF5FB2700C61FCE /* OrderNoteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35272EF5FB2700C61FCE /* OrderNoteModel.swift */; };
+		C8CB352A2EF6001800C61FCE /* AddOrderNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */; };
+		C8CB352C2EF6002A00C61FCE /* OrderNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */; };
+		C8CB352E2EF6003700C61FCE /* OrderPickListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -101,6 +106,11 @@
 		C8CB351B2EF5054600C61FCE /* OrderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderRow.swift; sourceTree = "<group>"; };
 		C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderDetailView.swift; sourceTree = "<group>"; };
 		C8CB351F2EF5058600C61FCE /* OrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersView.swift; sourceTree = "<group>"; };
+		C8CB35232EF5FAD800C61FCE /* Sale+fulfillmentextensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sale+fulfillmentextensions.swift"; sourceTree = "<group>"; };
+		C8CB35272EF5FB2700C61FCE /* OrderNoteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderNoteModel.swift; sourceTree = "<group>"; };
+		C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrderNoteView.swift; sourceTree = "<group>"; };
+		C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderNotesView.swift; sourceTree = "<group>"; };
+		C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPickListView.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -204,6 +214,7 @@
 		C8CB34F22EEF6AF400C61FCE /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35272EF5FB2700C61FCE /* OrderNoteModel.swift */,
 				C8CB34FD2EF20D1E00C61FCE /* SalesHistoryDisplay.swift */,
 			);
 			path = Models;
@@ -212,6 +223,9 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */,
+				C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */,
+				C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */,
 				C8CB351F2EF5058600C61FCE /* OrdersView.swift */,
 				C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */,
 				C8CB351B2EF5054600C61FCE /* OrderRow.swift */,
@@ -276,6 +290,7 @@
 		C8CB34F82EEF6B3100C61FCE /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35232EF5FAD800C61FCE /* Sale+fulfillmentextensions.swift */,
 				C8CB34FF2EF210C800C61FCE /* Sale+Extensions.swift */,
 				C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */,
 			);
@@ -358,6 +373,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8CB35282EF5FB2700C61FCE /* OrderNoteModel.swift in Sources */,
 				C8CB35202EF5058600C61FCE /* OrdersView.swift in Sources */,
 				C8CB34DB2EEF222200C61FCE /* ProductDetailView.swift in Sources */,
 				C8CB34D92EEF217C00C61FCE /* BarcodeScannerView.swift in Sources */,
@@ -373,8 +389,10 @@
 				C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */,
 				C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */,
 				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
+				C8CB352A2EF6001800C61FCE /* AddOrderNoteView.swift in Sources */,
 				C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */,
 				C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */,
+				C8CB352C2EF6002A00C61FCE /* OrderNotesView.swift in Sources */,
 				C8FBB5382EEE11F5001FC318 /* CameraManager.swift in Sources */,
 				C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */,
 				C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */,
@@ -391,7 +409,9 @@
 				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,
 				C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */,
 				C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */,
+				C8CB35242EF5FAE600C61FCE /* Sale+fulfillmentextensions.swift in Sources */,
 				C8CB35022EF4B94F00C61FCE /* ShopifyPermissionsView.swift in Sources */,
+				C8CB352E2EF6003700C61FCE /* OrderPickListView.swift in Sources */,
 				C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */,
 				C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */,
 				C8CB350D2EF4F62D00C61FCE /* FilterButton.swift in Sources */,
