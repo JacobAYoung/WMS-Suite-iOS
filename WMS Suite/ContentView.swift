@@ -11,7 +11,10 @@ struct ContentView: View {
         let accessToken = UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? ""
         let context = PersistenceController.shared.container.viewContext
         let repo = InventoryRepository(context: context)
-        let shopifyService = ShopifyService(storeUrl: "", accessToken: "")
+        let shopifyService = ShopifyService(
+            storeUrl: UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? "",
+            accessToken: UserDefaults.standard.string(forKey: "shopifyAccessToken") ?? ""
+        )
         let quickbooksService = QuickBooksService(
             companyId: companyId,
             accessToken: accessToken,

@@ -2,7 +2,7 @@
 //  ShopifyPermissionsChecker.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/18/25.
+//  FIXED: Properly checks write permissions
 //
 
 import SwiftUI
@@ -74,76 +74,43 @@ class ShopifyPermissionsChecker {
     
     /// Test a specific permission by making an API call
     private func testPermission(_ scope: String) async -> Bool {
-        // Map scopes to test queries
-        let testQuery: String
-        
-        switch scope {
-        case "read_products", "read_inventory":
-            testQuery = """
-            {
-                products(first: 1) {
-                    edges {
-                        node {
-                            id
-                        }
-                    }
-                }
-            }
-            """
-        case "write_products", "write_inventory":
-            // For write permissions, we check if read works (write implies read)
-            return await testPermission("read_products")
-            
-        case "read_orders":
-            testQuery = """
-            {
-                orders(first: 1) {
-                    edges {
-                        node {
-                            id
-                        }
-                    }
-                }
-            }
-            """
-        default:
-            return false
-        }
-        
+        // Get the actual scopes from Shopify's access_scopes endpoint
+        // This is the CORRECT way to check permissions
         do {
-            let url = URL(string: "https://\(storeUrl)/admin/api/2025-01/graphql.json")!
+            let url = URL(string: "https://\(storeUrl)/admin/oauth/access_scopes.json")!
             var request = URLRequest(url: url)
-            request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue(accessToken, forHTTPHeaderField: "X-Shopify-Access-Token")
-            request.httpBody = try JSONSerialization.data(withJSONObject: ["query": testQuery], options: [])
             
             let (data, response) = try await URLSession.shared.data(for: request)
             
-            guard let httpResponse = response as? HTTPURLResponse else {
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                print("Failed to fetch access scopes, status: \((response as? HTTPURLResponse)?.statusCode ?? 0)")
                 return false
             }
             
-            // If we get 200, permission is enabled
-            if httpResponse.statusCode == 200 {
-                // Check for errors in GraphQL response
-                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let errors = json["errors"] as? [[String: Any]] {
-                    // Check if error is permission-related
-                    for error in errors {
-                        if let message = error["message"] as? String,
-                           message.contains("access") || message.contains("permission") {
-                            return false
-                        }
-                    }
-                    return true
-                }
-                return true
+            // Parse the response to get actual scopes
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let accessScopes = json["access_scopes"] as? [[String: Any]] else {
+                print("Failed to parse access scopes")
+                return false
             }
             
+            // Check if our scope is in the list
+            for scopeDict in accessScopes {
+                if let handle = scopeDict["handle"] as? String {
+                    if handle == scope {
+                        print("✅ Found scope: \(scope)")
+                        return true
+                    }
+                }
+            }
+            
+            print("❌ Scope not found: \(scope)")
             return false
+            
         } catch {
-            print("Permission test failed for \(scope): \(error)")
+            print("Error checking scope \(scope): \(error)")
             return false
         }
     }

@@ -33,6 +33,11 @@
 		C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */; };
 		C8CB35072EF4BCEE00C61FCE /* ShopifyPermissionsChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */; };
 		C8CB35092EF4BD7700C61FCE /* AccountSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */; };
+		C8CB350B2EF4F43100C61FCE /* InventorySortFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB350A2EF4F42C00C61FCE /* InventorySortFilter.swift */; };
+		C8CB350D2EF4F62D00C61FCE /* FilterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB350C2EF4F62A00C61FCE /* FilterButton.swift */; };
+		C8CB350F2EF4F63E00C61FCE /* SortButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB350E2EF4F63B00C61FCE /* SortButton.swift */; };
+		C8CB35112EF4F65300C61FCE /* ActiveFiltersBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */; };
+		C8CB35132EF4F66400C61FCE /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -85,6 +90,11 @@
 		C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksTokenManager.swift; sourceTree = "<group>"; };
 		C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyPermissionsChecker.swift; sourceTree = "<group>"; };
 		C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSetupView.swift; sourceTree = "<group>"; };
+		C8CB350A2EF4F42C00C61FCE /* InventorySortFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventorySortFilter.swift; sourceTree = "<group>"; };
+		C8CB350C2EF4F62A00C61FCE /* FilterButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterButton.swift; sourceTree = "<group>"; };
+		C8CB350E2EF4F63B00C61FCE /* SortButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortButton.swift; sourceTree = "<group>"; };
+		C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveFiltersBar.swift; sourceTree = "<group>"; };
+		C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -124,6 +134,11 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */,
+				C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */,
+				C8CB350E2EF4F63B00C61FCE /* SortButton.swift */,
+				C8CB350C2EF4F62A00C61FCE /* FilterButton.swift */,
+				C8CB350A2EF4F42C00C61FCE /* InventorySortFilter.swift */,
 				C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */,
 				C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */,
 				C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */,
@@ -329,6 +344,7 @@
 				C8CB35002EF210D700C61FCE /* Sale+Extensions.swift in Sources */,
 				C8CB34FE2EF20D2D00C61FCE /* SalesHistoryDisplay.swift in Sources */,
 				C8FBB51C2EEE0D7A001FC318 /* ShopifyError.swift in Sources */,
+				C8CB350F2EF4F63E00C61FCE /* SortButton.swift in Sources */,
 				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
@@ -340,6 +356,7 @@
 				C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */,
 				C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */,
 				C8FBB51E2EEE0D88001FC318 /* ForecastResult.swift in Sources */,
+				C8CB35112EF4F65300C61FCE /* ActiveFiltersBar.swift in Sources */,
 				C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */,
 				C8FBB5282EEE0DC4001FC318 /* AddItemView.swift in Sources */,
 				C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */,
@@ -353,16 +370,19 @@
 				C8CB35022EF4B94F00C61FCE /* ShopifyPermissionsView.swift in Sources */,
 				C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */,
 				C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */,
+				C8CB350D2EF4F62D00C61FCE /* FilterButton.swift in Sources */,
 				C8FBB5242EEE0DB0001FC318 /* InventoryView.swift in Sources */,
 				C8CB34DD2EEF232100C61FCE /* QuickBooksServiceProtocol.swift in Sources */,
 				C8CB34E52EEF247600C61FCE /* QuickBooksSettingsView.swift in Sources */,
 				C8CB34ED2EEF446300C61FCE /* DataManagementView.swift in Sources */,
 				C8CB34E32EEF246400C61FCE /* ShopifySettingsView.swift in Sources */,
+				C8CB35132EF4F66400C61FCE /* EmptyStateView.swift in Sources */,
 				C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */,
 				C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */,
 				C8FBB52A2EEE0DCB001FC318 /* EditItemView.swift in Sources */,
 				C8FBB5142EEE0D4E001FC318 /* BarcodeServiceProtocol.swift in Sources */,
 				C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */,
+				C8CB350B2EF4F43100C61FCE /* InventorySortFilter.swift in Sources */,
 				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
 				C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */,
 				C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */,
