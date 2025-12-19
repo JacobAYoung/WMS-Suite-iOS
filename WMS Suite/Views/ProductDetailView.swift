@@ -555,23 +555,6 @@ struct ProductDetailView: View {
 
 // MARK: - Helper Views
 
-struct InfoRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                .font(.body)
-                .bold()
-        }
-    }
-}
-
 struct ActionButtonContent: View {
     let icon: String
     let text: String

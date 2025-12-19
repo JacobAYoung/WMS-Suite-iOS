@@ -2,7 +2,7 @@
 //  Sale+Extensions.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/16/25.
+//  Extensions for Sale entity
 //
 
 import Foundation
@@ -19,12 +19,30 @@ extension Sale {
     // Fetch sales for a specific item
     static func fetchSales(for item: InventoryItem, context: NSManagedObjectContext) -> [Sale] {
         let request = NSFetchRequest<Sale>(entityName: "Sale")
-        
-        // Use a predicate to find sales that have line items with this inventory item
         request.predicate = NSPredicate(format: "ANY lineItems.item == %@", item)
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Sale.saleDate, ascending: false)]
-        
         return (try? context.fetch(request)) ?? []
+    }
+    
+    // Fetch sales by source
+    static func fetchSales(bySource source: OrderSource, context: NSManagedObjectContext) -> [Sale] {
+        let request = NSFetchRequest<Sale>(entityName: "Sale")
+        request.predicate = NSPredicate(format: "source == %@", source.rawValue)
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Sale.saleDate, ascending: false)]
+        return (try? context.fetch(request)) ?? []
+    }
+    
+    // MARK: - Computed Properties
+    
+    // Get source as enum (handles nil gracefully)
+    var orderSource: OrderSource? {
+        guard let sourceString = source else { return nil }
+        return OrderSource(rawValue: sourceString)
+    }
+    
+    // Set source from enum
+    func setSource(_ orderSource: OrderSource) {
+        source = orderSource.rawValue
     }
     
     // Calculated total quantity for this sale
@@ -38,7 +56,7 @@ extension Sale {
         guard let items = lineItems as? Set<SaleLineItem> else { return 0 }
         return items.reduce(Decimal(0)) { result, lineItem in
             if let lineTotal = lineItem.lineTotal {
-                return result + (lineTotal as Decimal)  // ✅ Cast NSDecimalNumber to Decimal
+                return result + (lineTotal as Decimal)
             }
             return result
         }
@@ -48,6 +66,12 @@ extension Sale {
     var uniqueItems: [InventoryItem] {
         guard let items = lineItems as? Set<SaleLineItem> else { return [] }
         return items.compactMap { $0.item }
+    }
+    
+    // Count of unique items (not quantities)
+    var itemCount: Int {
+        guard let items = lineItems as? Set<SaleLineItem> else { return 0 }
+        return items.count
     }
 }
 

@@ -2,7 +2,7 @@
 //  AddSalesView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/13/25.
+//  Updated to set order source when creating sales
 //
 
 import SwiftUI
@@ -59,7 +59,7 @@ struct AddSalesView: View {
                     }
                 }
             }
-            .navigationTitle("Add Sale")
+            .navigationTitle("Add Order")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -94,6 +94,9 @@ struct AddSalesView: View {
         sale.id = Int32(Date().timeIntervalSince1970)
         sale.saleDate = saleDate
         sale.orderNumber = orderNumber.isEmpty ? nil : orderNumber
+        
+        // ✅ NEW: Set source to local for manually created orders
+        sale.setSource(.local)
         
         // Create line items
         for (index, lineItemInput) in lineItems.enumerated() {
@@ -253,7 +256,7 @@ struct AddLineItemView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Add Item to Sale")
+            .navigationTitle("Add Item to Order")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
