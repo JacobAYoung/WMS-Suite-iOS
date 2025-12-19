@@ -2,7 +2,7 @@
 //  SettingsNavigationView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/14/25.
+//  Updated with dynamic version/build numbers
 //
 
 import SwiftUI
@@ -10,6 +10,15 @@ import SwiftUI
 struct SettingsNavigationView: View {
     @ObservedObject var viewModel: InventoryViewModel
     @State private var showingClearDataAlert = false
+    
+    // Read version/build from Info.plist
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+    }
+    
+    private var buildNumber: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+    }
     
     var body: some View {
         NavigationView {
@@ -24,7 +33,7 @@ struct SettingsNavigationView: View {
                         }
                     }
                     
-                    NavigationLink(destination: QuickBooksSettingsView(viewModel: viewModel)) {
+                    NavigationLink(destination: QuickBooksSettingsView()) {
                         HStack {
                             Image(systemName: "book.fill")
                                 .foregroundColor(.orange)
@@ -58,14 +67,14 @@ struct SettingsNavigationView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.0")
+                        Text(appVersion)
                             .foregroundColor(.secondary)
                     }
                     
                     HStack {
                         Text("Build")
                         Spacer()
-                        Text("100")
+                        Text(buildNumber)
                             .foregroundColor(.secondary)
                     }
                     

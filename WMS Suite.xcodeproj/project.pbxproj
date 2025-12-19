@@ -29,6 +29,10 @@
 		C8CB34FA2EEF6CDB00C61FCE /* AppIcon.svg in Resources */ = {isa = PBXBuildFile; fileRef = C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */; };
 		C8CB34FE2EF20D2D00C61FCE /* SalesHistoryDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34FD2EF20D1E00C61FCE /* SalesHistoryDisplay.swift */; };
 		C8CB35002EF210D700C61FCE /* Sale+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34FF2EF210C800C61FCE /* Sale+Extensions.swift */; };
+		C8CB35022EF4B94F00C61FCE /* ShopifyPermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35012EF4B94800C61FCE /* ShopifyPermissionsView.swift */; };
+		C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */; };
+		C8CB35072EF4BCEE00C61FCE /* ShopifyPermissionsChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */; };
+		C8CB35092EF4BD7700C61FCE /* AccountSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -77,6 +81,10 @@
 		C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = AppIcon.svg; sourceTree = "<group>"; };
 		C8CB34FD2EF20D1E00C61FCE /* SalesHistoryDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryDisplay.swift; sourceTree = "<group>"; };
 		C8CB34FF2EF210C800C61FCE /* Sale+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sale+Extensions.swift"; sourceTree = "<group>"; };
+		C8CB35012EF4B94800C61FCE /* ShopifyPermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyPermissionsView.swift; sourceTree = "<group>"; };
+		C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksTokenManager.swift; sourceTree = "<group>"; };
+		C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyPermissionsChecker.swift; sourceTree = "<group>"; };
+		C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSetupView.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -116,6 +124,8 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35062EF4BCED00C61FCE /* ShopifyPermissionsChecker.swift */,
+				C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */,
 				C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */,
 				C8CB34F82EEF6B3100C61FCE /* Extensions */,
 				C8CB34F72EEF6B2200C61FCE /* Utilities */,
@@ -172,6 +182,8 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */,
+				C8CB35012EF4B94800C61FCE /* ShopifyPermissionsView.swift */,
 				C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */,
 				C8CB34E62EEF3F9400C61FCE /* ForecastDetailView.swift */,
 				C8CB34E42EEF247400C61FCE /* QuickBooksSettingsView.swift */,
@@ -320,6 +332,7 @@
 				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
+				C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */,
 				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
 				C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */,
 				C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */,
@@ -333,9 +346,11 @@
 				C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */,
 				C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */,
 				C8CB34EB2EEF443800C61FCE /* ExportImportService.swift in Sources */,
+				C8CB35072EF4BCEE00C61FCE /* ShopifyPermissionsChecker.swift in Sources */,
 				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,
 				C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */,
 				C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */,
+				C8CB35022EF4B94F00C61FCE /* ShopifyPermissionsView.swift in Sources */,
 				C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */,
 				C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */,
 				C8FBB5242EEE0DB0001FC318 /* InventoryView.swift in Sources */,
@@ -351,6 +366,7 @@
 				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
 				C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */,
 				C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */,
+				C8CB35092EF4BD7700C61FCE /* AccountSetupView.swift in Sources */,
 				C8CB34E92EEF416200C61FCE /* InventoryGridView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -484,12 +500,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WMS-Suite-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "WMS Suite";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to count inventory items";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access for saving barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -501,7 +520,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.YoungSlns.WMS-Suite";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -515,12 +534,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WMS-Suite-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "WMS Suite";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is needed to count inventory items";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access for saving barcodes";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -532,7 +554,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.YoungSlns.WMS-Suite";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

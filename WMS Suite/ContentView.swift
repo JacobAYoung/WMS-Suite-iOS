@@ -7,10 +7,16 @@ struct ContentView: View {
     @State private var selectedTab = 0
     
     init() {
+        let companyId = UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? ""
+        let accessToken = UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? ""
         let context = PersistenceController.shared.container.viewContext
         let repo = InventoryRepository(context: context)
         let shopifyService = ShopifyService(storeUrl: "", accessToken: "")
-        let quickbooksService = QuickBooksService(companyId: "", accessToken: "")
+        let quickbooksService = QuickBooksService(
+            companyId: companyId,
+            accessToken: accessToken,
+            refreshToken: UserDefaults.standard.string(forKey: "quickbooksRefreshToken") ?? ""
+        )
         let barcodeService = BarcodeService()
         _viewModel = StateObject(wrappedValue: InventoryViewModel(
             repository: repo,

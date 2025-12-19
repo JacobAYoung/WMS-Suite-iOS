@@ -193,9 +193,11 @@ class InventoryViewModel: ObservableObject {
             throw AppError.missingCredentials("QuickBooks credentials not configured")
         }
         
-        if let service = quickbooksService as? QuickBooksService {
-            service.updateCredentials(companyId: companyId, accessToken: accessToken)
-        }
+        let service = QuickBooksService(
+            companyId: companyId,
+            accessToken: accessToken,
+            refreshToken: UserDefaults.standard.string(forKey: "quickbooksRefreshToken") ?? ""
+        )
         
         do {
             let itemId = try await quickbooksService.pushItem(item)
