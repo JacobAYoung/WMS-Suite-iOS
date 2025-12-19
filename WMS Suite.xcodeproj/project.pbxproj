@@ -38,6 +38,9 @@
 		C8CB350F2EF4F63E00C61FCE /* SortButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB350E2EF4F63B00C61FCE /* SortButton.swift */; };
 		C8CB35112EF4F65300C61FCE /* ActiveFiltersBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */; };
 		C8CB35132EF4F66400C61FCE /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */; };
+		C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351B2EF5054600C61FCE /* OrderRow.swift */; };
+		C8CB351E2EF5055900C61FCE /* OrderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */; };
+		C8CB35202EF5058600C61FCE /* OrdersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB351F2EF5058600C61FCE /* OrdersView.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -95,6 +98,9 @@
 		C8CB350E2EF4F63B00C61FCE /* SortButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortButton.swift; sourceTree = "<group>"; };
 		C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveFiltersBar.swift; sourceTree = "<group>"; };
 		C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		C8CB351B2EF5054600C61FCE /* OrderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderRow.swift; sourceTree = "<group>"; };
+		C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderDetailView.swift; sourceTree = "<group>"; };
+		C8CB351F2EF5058600C61FCE /* OrdersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersView.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -120,6 +126,14 @@
 		C8FBB53D2EEE1F2A001FC318 /* WMS-Suite-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "WMS-Suite-Info.plist"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		C8CB35182EF5052200C61FCE /* Enums */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Enums;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		C89984942EE4CFE500B6661C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -134,6 +148,7 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35182EF5052200C61FCE /* Enums */,
 				C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */,
 				C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */,
 				C8CB350E2EF4F63B00C61FCE /* SortButton.swift */,
@@ -197,6 +212,9 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB351F2EF5058600C61FCE /* OrdersView.swift */,
+				C8CB351D2EF5055900C61FCE /* OrderDetailView.swift */,
+				C8CB351B2EF5054600C61FCE /* OrderRow.swift */,
 				C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */,
 				C8CB35012EF4B94800C61FCE /* ShopifyPermissionsView.swift */,
 				C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */,
@@ -279,6 +297,9 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				C8CB35182EF5052200C61FCE /* Enums */,
+			);
 			name = "WMS Suite";
 			packageProductDependencies = (
 			);
@@ -337,6 +358,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8CB35202EF5058600C61FCE /* OrdersView.swift in Sources */,
 				C8CB34DB2EEF222200C61FCE /* ProductDetailView.swift in Sources */,
 				C8CB34D92EEF217C00C61FCE /* BarcodeScannerView.swift in Sources */,
 				C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */,
@@ -348,6 +370,7 @@
 				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
+				C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */,
 				C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */,
 				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
 				C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */,
@@ -362,6 +385,7 @@
 				C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */,
 				C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */,
 				C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */,
+				C8CB351E2EF5055900C61FCE /* OrderDetailView.swift in Sources */,
 				C8CB34EB2EEF443800C61FCE /* ExportImportService.swift in Sources */,
 				C8CB35072EF4BCEE00C61FCE /* ShopifyPermissionsChecker.swift in Sources */,
 				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,

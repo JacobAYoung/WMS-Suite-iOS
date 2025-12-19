@@ -31,29 +31,41 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            // Products Tab (renamed from Inventory)
             InventoryView(viewModel: viewModel)
                 .tabItem {
-                    Label("Inventory", systemImage: "list.bullet.rectangle")
+                    Label("Products", systemImage: "shippingbox.fill")
                 }
                 .tag(0)
             
+            // Orders Tab (NEW)
+            OrdersView()
+                .environment(\.managedObjectContext, viewContext)
+                .tabItem {
+                    Label("Orders", systemImage: "list.bullet.rectangle")
+                }
+                .tag(1)
+            
+            // Barcodes Tab
             BarcodeView(viewModel: viewModel)
                 .tabItem {
                     Label("Barcodes", systemImage: "barcode")
                 }
-                .tag(1)
+                .tag(2)
             
+            // AI Count Tab
             CountingView(viewModel: viewModel)
                 .tabItem {
                     Label("AI Count", systemImage: "camera")
                 }
-                .tag(2)
+                .tag(3)
             
+            // Settings Tab
             SettingsNavigationView(viewModel: viewModel)
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-                .tag(3)
+                .tag(4)
         }
         .alert("Error", isPresented: $viewModel.showingError) {
             Button("OK", role: .cancel) { }
