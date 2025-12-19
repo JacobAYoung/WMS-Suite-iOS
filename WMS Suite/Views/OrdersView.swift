@@ -2,7 +2,7 @@
 //  OrdersView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/18/25.
+//  Enhanced: Added status sections, priority orders, fulfillment filtering
 //
 
 import SwiftUI
@@ -16,13 +16,54 @@ struct OrdersView: View {
     private var sales: FetchedResults<Sale>
     
     @State private var searchText = ""
-    @State private var selectedTimeframe = 0
-    @State private var selectedSource: OrderSource? = nil  // nil = all sources
+    @State private var selectedSource: OrderSource? = nil
+    @State private var selectedStatus: OrderFulfillmentStatus? = nil
     @State private var showingAddOrder = false
     
-    let timeframes = ["7 Days", "30 Days", "90 Days", "All Time"]
-    
     var filteredSales: [Sale] {
+        var filtered = allOrders
+        
+        // Filter by status using computed properties (handles nil correctly)
+        if let status = selectedStatus {
+            switch status {
+            case .needsFulfillment:
+                filtered = filtered.filter { $0.needsFulfillment }
+            case .inTransit:
+                filtered = filtered.filter { $0.isInTransit && !$0.isUnconfirmed }
+            case .unconfirmed:
+                filtered = filtered.filter { $0.isUnconfirmed }
+            case .delivered:
+                filtered = filtered.filter { $0.isDelivered }
+            }
+        }
+        
+        return filtered
+    }
+    
+    // Priority orders (always at top)
+    var priorityOrders: [Sale] {
+        filteredSales.filter { $0.isPriority || $0.needsAttention }
+    }
+    
+    // Orders by status (using computed properties to handle nil correctly)
+    var needsFulfillmentOrders: [Sale] {
+        allOrders.filter { $0.needsFulfillment && !$0.hasFlagsSet }
+    }
+    
+    var inTransitOrders: [Sale] {
+        allOrders.filter { $0.isInTransit && !$0.isUnconfirmed && !$0.hasFlagsSet }
+    }
+    
+    var unconfirmedOrders: [Sale] {
+        allOrders.filter { $0.isUnconfirmed && !$0.hasFlagsSet }
+    }
+    
+    var deliveredOrders: [Sale] {
+        allOrders.filter { $0.isDelivered && !$0.hasFlagsSet }
+    }
+    
+    // All orders (before priority filtering)
+    var allOrders: [Sale] {
         var filtered = Array(sales)
         
         // Filter by source
@@ -30,30 +71,7 @@ struct OrdersView: View {
             filtered = filtered.filter { $0.orderSource == source }
         }
         
-        // Filter by timeframe
-        let calendar = Calendar.current
-        let now = Date()
-        switch selectedTimeframe {
-        case 0: // 7 days
-            filtered = filtered.filter { sale in
-                guard let date = sale.saleDate else { return false }
-                return calendar.dateComponents([.day], from: date, to: now).day ?? 999 <= 7
-            }
-        case 1: // 30 days
-            filtered = filtered.filter { sale in
-                guard let date = sale.saleDate else { return false }
-                return calendar.dateComponents([.day], from: date, to: now).day ?? 999 <= 30
-            }
-        case 2: // 90 days
-            filtered = filtered.filter { sale in
-                guard let date = sale.saleDate else { return false }
-                return calendar.dateComponents([.day], from: date, to: now).day ?? 999 <= 90
-            }
-        default: // All time
-            break
-        }
-        
-        // Filter by search text (search order number)
+        // Filter by search text
         if !searchText.isEmpty {
             filtered = filtered.filter { sale in
                 sale.orderNumber?.localizedCaseInsensitiveContains(searchText) ?? false
@@ -63,67 +81,20 @@ struct OrdersView: View {
         return filtered
     }
     
-    var totalSales: Int32 {
-        filteredSales.reduce(0) { $0 + $1.totalQuantity }
-    }
-    
-    var averageDailySales: Double {
-        guard !filteredSales.isEmpty else { return 0 }
-        
-        let calendar = Calendar.current
-        let now = Date()
-        var days = 1
-        
-        switch selectedTimeframe {
-        case 0: days = 7
-        case 1: days = 30
-        case 2: days = 90
-        default:
-            if let oldestDate = filteredSales.last?.saleDate {
-                days = max(1, calendar.dateComponents([.day], from: oldestDate, to: now).day ?? 1)
-            }
-        }
-        
-        return Double(totalSales) / Double(days)
-    }
-    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 // Source Filter Tabs
                 sourceFilterTabs
                 
-                // Summary Cards
-                HStack(spacing: 12) {
-                    SummaryCard(title: "Total Sales", value: "\(totalSales)", color: .blue)
-                    SummaryCard(title: "Avg/Day", value: String(format: "%.1f", averageDailySales), color: .green)
-                    SummaryCard(title: "Orders", value: "\(filteredSales.count)", color: .purple)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+                // Status Filter Tabs
+                statusFilterTabs
                 
-                // Timeframe Picker
-                Picker("Timeframe", selection: $selectedTimeframe) {
-                    ForEach(0..<timeframes.count, id: \.self) { index in
-                        Text(timeframes[index]).tag(index)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-                
-                // Orders List
+                // Orders List with Sections
                 if filteredSales.isEmpty {
                     emptyStateView
                 } else {
-                    List {
-                        ForEach(filteredSales, id: \.id) { sale in
-                            NavigationLink(destination: OrderDetailView(sale: sale)) {
-                                OrderRow(sale: sale)
-                            }
-                        }
-                        .onDelete(perform: deleteOrders)
-                    }
+                    ordersList
                 }
             }
             .navigationTitle("Orders")
@@ -147,7 +118,6 @@ struct OrdersView: View {
     private var sourceFilterTabs: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                // All orders tab
                 SourceTabButton(
                     title: "All",
                     icon: "square.grid.2x2",
@@ -156,7 +126,6 @@ struct OrdersView: View {
                     action: { selectedSource = nil }
                 )
                 
-                // Local orders tab
                 SourceTabButton(
                     title: OrderSource.local.displayName,
                     icon: OrderSource.local.icon,
@@ -165,7 +134,6 @@ struct OrdersView: View {
                     action: { selectedSource = .local }
                 )
                 
-                // Shopify orders tab
                 SourceTabButton(
                     title: OrderSource.shopify.displayName,
                     icon: OrderSource.shopify.icon,
@@ -174,7 +142,6 @@ struct OrdersView: View {
                     action: { selectedSource = .shopify }
                 )
                 
-                // QuickBooks tab (greyed out for future)
                 SourceTabButton(
                     title: OrderSource.quickbooks.displayName,
                     icon: OrderSource.quickbooks.icon,
@@ -188,6 +155,134 @@ struct OrdersView: View {
             .padding(.vertical, 8)
         }
         .background(Color(uiColor: .secondarySystemBackground))
+    }
+    
+    // MARK: - Status Filter Tabs
+    
+    private var statusFilterTabs: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                StatusTabButton(
+                    title: "All",
+                    icon: "square.grid.2x2",
+                    color: .gray,
+                    count: nil,
+                    isSelected: selectedStatus == nil,
+                    action: { selectedStatus = nil }
+                )
+                
+                ForEach(OrderFulfillmentStatus.allCases) { status in
+                    StatusTabButton(
+                        title: status.displayName,
+                        icon: status.icon,
+                        color: status.color,
+                        count: countForStatus(status),
+                        isSelected: selectedStatus == status,
+                        action: { selectedStatus = status }
+                    )
+                }
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+        }
+        .background(Color(uiColor: .tertiarySystemBackground))
+    }
+    
+    // MARK: - Orders List
+    
+    private var ordersList: some View {
+        List {
+            // Priority Section (always first if not empty)
+            if !priorityOrders.isEmpty && selectedStatus == nil {
+                Section {
+                    ForEach(priorityOrders, id: \.id) { sale in
+                        NavigationLink(destination: OrderDetailView(sale: sale)) {
+                            OrderRow(sale: sale)
+                        }
+                    }
+                } header: {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                        Text("Priority Orders")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+            
+            // Status-specific sections (if no status filter selected)
+            if selectedStatus == nil {
+                if !needsFulfillmentOrders.isEmpty {
+                    Section {
+                        ForEach(needsFulfillmentOrders, id: \.id) { sale in
+                            NavigationLink(destination: OrderDetailView(sale: sale)) {
+                                OrderRow(sale: sale)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: OrderFulfillmentStatus.needsFulfillment.icon)
+                            Text("Needs Fulfillment (\(needsFulfillmentOrders.count))")
+                        }
+                    }
+                }
+                
+                if !inTransitOrders.isEmpty {
+                    Section {
+                        ForEach(inTransitOrders, id: \.id) { sale in
+                            NavigationLink(destination: OrderDetailView(sale: sale)) {
+                                OrderRow(sale: sale)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: OrderFulfillmentStatus.inTransit.icon)
+                            Text("In Transit (\(inTransitOrders.count))")
+                        }
+                    }
+                }
+                
+                if !unconfirmedOrders.isEmpty {
+                    Section {
+                        ForEach(unconfirmedOrders, id: \.id) { sale in
+                            NavigationLink(destination: OrderDetailView(sale: sale)) {
+                                OrderRow(sale: sale)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: OrderFulfillmentStatus.unconfirmed.icon)
+                            Text("Unconfirmed (\(unconfirmedOrders.count))")
+                        }
+                        .foregroundColor(.yellow)
+                    }
+                }
+                
+                if !deliveredOrders.isEmpty {
+                    Section {
+                        ForEach(deliveredOrders, id: \.id) { sale in
+                            NavigationLink(destination: OrderDetailView(sale: sale)) {
+                                OrderRow(sale: sale)
+                            }
+                        }
+                    } header: {
+                        HStack {
+                            Image(systemName: OrderFulfillmentStatus.delivered.icon)
+                            Text("Delivered (\(deliveredOrders.count))")
+                        }
+                    }
+                }
+            } else {
+                // When status filter is selected, show all matching orders
+                Section {
+                    ForEach(filteredSales, id: \.id) { sale in
+                        NavigationLink(destination: OrderDetailView(sale: sale)) {
+                            OrderRow(sale: sale)
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
     }
     
     // MARK: - Empty State
@@ -204,6 +299,10 @@ struct OrdersView: View {
             
             if selectedSource != nil {
                 Text("No orders from \(selectedSource!.displayName)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            } else if selectedStatus != nil {
+                Text("No orders with status: \(selectedStatus!.displayName)")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             } else if !searchText.isEmpty {
@@ -229,17 +328,54 @@ struct OrdersView: View {
         .padding()
     }
     
-    // MARK: - Actions
+    // MARK: - Helpers
     
-    private func deleteOrders(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { filteredSales[$0] }.forEach(viewContext.delete)
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error deleting orders: \(error)")
+    private func countForStatus(_ status: OrderFulfillmentStatus) -> Int {
+        // Count all sales matching this status (using computed properties)
+        switch status {
+        case .needsFulfillment:
+            return sales.filter { $0.needsFulfillment }.count
+        case .inTransit:
+            return sales.filter { $0.isInTransit && !$0.isUnconfirmed }.count
+        case .unconfirmed:
+            return sales.filter { $0.isUnconfirmed }.count
+        case .delivered:
+            return sales.filter { $0.isDelivered }.count
+        }
+    }
+}
+
+// MARK: - Status Tab Button
+
+struct StatusTabButton: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let count: Int?
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                Text(title)
+                if let count = count, count > 0 {
+                    Text("(\(count))")
+                        .font(.caption2)
+                }
             }
+            .font(.subheadline)
+            .fontWeight(isSelected ? .semibold : .regular)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(isSelected ? color.opacity(0.2) : Color.clear)
+            .foregroundColor(isSelected ? color : .primary)
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(isSelected ? color : Color.gray.opacity(0.3), lineWidth: 1)
+            )
         }
     }
 }

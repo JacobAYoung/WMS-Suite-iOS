@@ -2,7 +2,7 @@
 //  ShopifyPermissionsView.swift
 //  WMS Suite
 //
-//  Shows which Shopify permissions are enabled/disabled
+//  Updated: Stores read_fulfillments permission state
 //
 
 import SwiftUI
@@ -115,6 +115,8 @@ struct ShopifyPermissionsView: View {
             // Store permission states for later use
             UserDefaults.standard.set(hasPermission("write_inventory"), forKey: "shopify_canWriteInventory")
             UserDefaults.standard.set(hasPermission("read_products"), forKey: "shopify_canReadProducts")
+            // ✅ NEW: Store read_fulfillments permission
+            UserDefaults.standard.set(hasPermission("read_fulfillments"), forKey: "shopify_canReadFulfillments")
             
         } catch {
             errorMessage = "Failed to check permissions: \(error.localizedDescription)"
