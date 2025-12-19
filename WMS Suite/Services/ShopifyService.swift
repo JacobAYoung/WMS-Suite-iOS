@@ -2,7 +2,7 @@
 //  ShopifyService.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/13/25.
+//  Fixed: Now checks database to prevent duplicates
 //
 
 import Foundation
@@ -84,6 +84,9 @@ class ShopifyService: ShopifyServiceProtocol {
         
         print("Found \(edges.count) products from Shopify")
         
+        // ✅ FIX: Get fresh items from database each time to prevent duplicates
+        let freshItems = try await repo.fetchAllItems()
+        
         for edge in edges {
             guard let node = edge["node"] as? [String: Any],
                   let title = node["title"] as? String,
@@ -108,7 +111,8 @@ class ShopifyService: ShopifyServiceProtocol {
                     continue
                 }
                 
-                if let localItem = localItems.first(where: { $0.sku == sku }) {
+                // ✅ FIX: Check freshItems (from database) instead of localItems (old in-memory)
+                if let localItem = freshItems.first(where: { $0.sku == sku }) {
                     // Update existing item
                     var needsUpdate = false
                     

@@ -2,7 +2,7 @@
 //  InventorySortFilter.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/18/25.
+//  Sorting and filtering options for inventory
 //
 
 import Foundation
@@ -54,7 +54,6 @@ enum InventorySortOption: String, CaseIterable, Identifiable {
             return items.sorted { $0.quantity > $1.quantity }
         case .lowStock:
             return items.sorted { item1, item2 in
-                // Items below min stock first
                 let item1BelowMin = item1.quantity < item1.minStockLevel
                 let item2BelowMin = item2.quantity < item2.minStockLevel
                 
@@ -63,7 +62,6 @@ enum InventorySortOption: String, CaseIterable, Identifiable {
                 } else if !item1BelowMin && item2BelowMin {
                     return false
                 } else {
-                    // Both below or both above - sort by quantity
                     return item1.quantity < item2.quantity
                 }
             }
@@ -120,7 +118,7 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
         case .hasImage:
             return "photo"
         case .noImage:
-            return "photo.slash"
+            return "photo.badge.minus"
         }
     }
     
@@ -144,29 +142,6 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
             return items.filter { $0.imageUrl != nil && !($0.imageUrl?.isEmpty ?? true) }
         case .noImage:
             return items.filter { $0.imageUrl == nil || ($0.imageUrl?.isEmpty ?? true) }
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .all:
-            return "Show all items"
-        case .lowStock:
-            return "Items below minimum stock level"
-        case .outOfStock:
-            return "Items with zero quantity"
-        case .shopify:
-            return "Items synced from Shopify"
-        case .quickbooks:
-            return "Items synced from QuickBooks"
-        case .local:
-            return "Items created locally"
-        case .needsSync:
-            return "Items with unsync'd changes"
-        case .hasImage:
-            return "Items with product images"
-        case .noImage:
-            return "Items without product images"
         }
     }
 }
