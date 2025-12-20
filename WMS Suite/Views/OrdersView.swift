@@ -99,13 +99,31 @@ struct OrdersView: View {
             }
             .navigationTitle("Orders")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                // LEFT SIDE - Refresh button
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: refreshOrders) {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                
+                // RIGHT SIDE - Charts and Add button
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // ✅ NEW: Charts navigation link
+                    NavigationLink(destination: OrdersChartsView()) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.blue)
+                    }
+                    
                     Button(action: { showingAddOrder = true }) {
                         Image(systemName: "plus.circle.fill")
                     }
                 }
             }
             .searchable(text: $searchText, prompt: "Search order number...")
+            // ✅ NEW: Pull-to-refresh support
+            .refreshable {
+                await refreshOrdersAsync()
+            }
             .sheet(isPresented: $showingAddOrder) {
                 AddSalesView()
                     .environment(\.managedObjectContext, viewContext)
@@ -329,6 +347,20 @@ struct OrdersView: View {
     }
     
     // MARK: - Helpers
+    
+    private func refreshOrders() {
+        // Refresh orders from Shopify if configured
+        // For now, just triggers Core Data to refresh
+        // Future: Add Shopify order sync here
+        viewContext.refreshAllObjects()
+    }
+    
+    private func refreshOrdersAsync() async {
+        // For pull-to-refresh gesture
+        refreshOrders()
+        // Small delay to feel responsive
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+    }
     
     private func countForStatus(_ status: OrderFulfillmentStatus) -> Int {
         // Count all sales matching this status (using computed properties)

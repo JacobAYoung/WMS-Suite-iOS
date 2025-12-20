@@ -54,7 +54,7 @@ struct InventoryView: View {
             }
             .navigationTitle("Inventory")
             .toolbar {
-                // LEFT SIDE - ONLY REFRESH BUTTON
+                // LEFT SIDE - Refresh button
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: refreshData) {
                         HStack(spacing: 4) {
@@ -68,8 +68,14 @@ struct InventoryView: View {
                     .disabled(viewModel.isLoading)
                 }
                 
-                // RIGHT SIDE - Filter, Sort, Add
+                // RIGHT SIDE - Charts, Filter, Sort, Add
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // ✅ NEW: Charts navigation link
+                    NavigationLink(destination: ProductsChartsView()) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.blue)
+                    }
+                    
                     FilterButton(selectedFilter: $selectedFilter)
                     SortButton(selectedSort: $selectedSort)
                     
@@ -87,8 +93,6 @@ struct InventoryView: View {
             } message: {
                 Text(viewModel.syncMessage)
             }
-            // ✅ FIXED: Removed .onAppear { refreshData() }
-            // Now only refreshes on manual button press or pull-to-refresh
             .refreshable {
                 await refreshDataAsync()
             }
@@ -118,17 +122,14 @@ struct InventoryView: View {
     }
     
     private func refreshData() {
-        // Call the ACTUAL method that exists in ViewModel
         viewModel.syncWithShopify()
     }
     
     private func refreshDataAsync() async {
-        // For pull-to-refresh gesture
         viewModel.syncWithShopify()
         
-        // Wait for sync to complete
         while viewModel.isLoading {
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+            try? await Task.sleep(nanoseconds: 100_000_000)
         }
     }
     

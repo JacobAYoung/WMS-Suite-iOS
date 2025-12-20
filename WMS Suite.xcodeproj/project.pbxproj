@@ -46,6 +46,8 @@
 		C8CB352A2EF6001800C61FCE /* AddOrderNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */; };
 		C8CB352C2EF6002A00C61FCE /* OrderNotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */; };
 		C8CB352E2EF6003700C61FCE /* OrderPickListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */; };
+		C8CB35342EF7416100C61FCE /* ProductsChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35332EF7416100C61FCE /* ProductsChartsView.swift */; };
+		C8CB35362EF7416E00C61FCE /* OrdersChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35352EF7416E00C61FCE /* OrdersChartsView.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -111,6 +113,8 @@
 		C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddOrderNoteView.swift; sourceTree = "<group>"; };
 		C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderNotesView.swift; sourceTree = "<group>"; };
 		C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPickListView.swift; sourceTree = "<group>"; };
+		C8CB35332EF7416100C61FCE /* ProductsChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsChartsView.swift; sourceTree = "<group>"; };
+		C8CB35352EF7416E00C61FCE /* OrdersChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdersChartsView.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -223,6 +227,8 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB35352EF7416E00C61FCE /* OrdersChartsView.swift */,
+				C8CB35332EF7416100C61FCE /* ProductsChartsView.swift */,
 				C8CB352D2EF6003700C61FCE /* OrderPickListView.swift */,
 				C8CB352B2EF6002A00C61FCE /* OrderNotesView.swift */,
 				C8CB35292EF6001800C61FCE /* AddOrderNoteView.swift */,
@@ -387,6 +393,7 @@
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
 				C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */,
+				C8CB35362EF7416E00C61FCE /* OrdersChartsView.swift in Sources */,
 				C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */,
 				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
 				C8CB352A2EF6001800C61FCE /* AddOrderNoteView.swift in Sources */,
@@ -396,6 +403,7 @@
 				C8FBB5382EEE11F5001FC318 /* CameraManager.swift in Sources */,
 				C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */,
 				C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */,
+				C8CB35342EF7416100C61FCE /* ProductsChartsView.swift in Sources */,
 				C8FBB51E2EEE0D88001FC318 /* ForecastResult.swift in Sources */,
 				C8CB35112EF4F65300C61FCE /* ActiveFiltersBar.swift in Sources */,
 				C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */,
