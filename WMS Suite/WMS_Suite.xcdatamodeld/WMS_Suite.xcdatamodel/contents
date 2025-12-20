@@ -5,6 +5,17 @@
         <attribute name="shopifyAccessToken" optional="YES" attributeType="String"/>
         <attribute name="shopifyStoreUrl" optional="YES" attributeType="String"/>
     </entity>
+    <entity name="Customer" representedClassName="Customer" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="lastContactDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="phone" optional="YES" attributeType="String"/>
+        <relationship name="jobs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Job" inverseName="customer" inverseEntity="Job"/>
+    </entity>
     <entity name="InventoryItem" representedClassName="InventoryItem" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="imageUrl" optional="YES" attributeType="String"/>
@@ -21,6 +32,37 @@
         <attribute name="upc" optional="YES" attributeType="String"/>
         <attribute name="webSKU" optional="YES" attributeType="String"/>
         <relationship name="saleLineItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SaleLineItem" inverseName="item" inverseEntity="SaleLineItem"/>
+    </entity>
+    <entity name="Job" representedClassName="Job" syncable="YES" codeGenerationType="class">
+        <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="completedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="estimatedDuration" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="isCancelled" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="isCompleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="jobDescription" optional="YES" attributeType="String"/>
+        <attribute name="jobType" optional="YES" attributeType="String"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="scheduledDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="title" attributeType="String"/>
+        <relationship name="customer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Customer" inverseName="jobs" inverseEntity="Customer"/>
+        <relationship name="jobNotes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="JobNote" inverseName="job" inverseEntity="JobNote"/>
+        <relationship name="photos" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="JobPhoto" inverseName="job" inverseEntity="JobPhoto"/>
+    </entity>
+    <entity name="JobNote" representedClassName="JobNote" syncable="YES" codeGenerationType="class">
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="noteText" attributeType="String"/>
+        <attribute name="userName" optional="YES" attributeType="String"/>
+        <relationship name="job" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Job" inverseName="jobNotes" inverseEntity="Job"/>
+    </entity>
+    <entity name="JobPhoto" representedClassName="JobPhoto" syncable="YES" codeGenerationType="class">
+        <attribute name="caption" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="imageData" attributeType="Binary"/>
+        <attribute name="takenDate" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="job" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Job" inverseName="photos" inverseEntity="Job"/>
     </entity>
     <entity name="OrderNote" representedClassName="OrderNote" syncable="YES" codeGenerationType="class">
         <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>

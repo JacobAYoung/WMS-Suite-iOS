@@ -22,8 +22,8 @@
         </dict>
     </dict>
     <key>NSCameraUsageDescription</key>
-    <string>Camera access is needed to count inventory items and scan barcodes</string>
+    <string>Camera access is needed for jobs, count products and scan barcodes</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Photo library access for saving barcodes</string>
+    <string>Photo library access for saving barcodes and jobs for documentation.</string>
 </dict>
 </plist>
