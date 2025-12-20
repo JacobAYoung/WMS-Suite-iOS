@@ -31,14 +31,14 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Products Tab (renamed from Inventory)
+            // Products Tab
             InventoryView(viewModel: viewModel)
                 .tabItem {
                     Label("Products", systemImage: "shippingbox.fill")
                 }
                 .tag(0)
             
-            // Orders Tab (NEW)
+            // Orders Tab
             OrdersView()
                 .environment(\.managedObjectContext, viewContext)
                 .tabItem {
@@ -46,17 +46,18 @@ struct ContentView: View {
                 }
                 .tag(1)
             
-            // Barcodes Tab
-            BarcodeView(viewModel: viewModel)
+            // Customers Tab (NEW!)
+            CustomersView()
+                .environment(\.managedObjectContext, viewContext)
                 .tabItem {
-                    Label("Barcodes", systemImage: "barcode")
+                    Label("Customers", systemImage: "person.2.fill")
                 }
                 .tag(2)
             
-            // AI Count Tab
-            CountingView(viewModel: viewModel)
+            // Tools Tab (NEW! - Consolidated utilities)
+            ToolsView(viewModel: viewModel)
                 .tabItem {
-                    Label("AI Count", systemImage: "camera")
+                    Label("Tools", systemImage: "wrench.and.screwdriver.fill")
                 }
                 .tag(3)
             
