@@ -2,7 +2,7 @@
 //  ToolsView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/20/25.
+//  Consolidated utilities view for barcode scanning and AI counting
 //
 
 import SwiftUI

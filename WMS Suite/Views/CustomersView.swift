@@ -2,7 +2,7 @@
 //  CustomersView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/20/25.
+//  Main customer list view with search and filtering
 //
 
 import SwiftUI

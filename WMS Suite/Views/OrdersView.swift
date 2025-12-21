@@ -21,19 +21,29 @@ struct OrdersView: View {
     @State private var showingAddOrder = false
     
     var filteredSales: [Sale] {
-        var filtered = allOrders
+        var filtered = Array(sales)
         
-        // Filter by status using computed properties (handles nil correctly)
+        // Filter by source
+        if let source = selectedSource {
+            filtered = filtered.filter { $0.orderSource == source }
+        }
+        
+        // Filter by status
         if let status = selectedStatus {
-            switch status {
-            case .needsFulfillment:
-                filtered = filtered.filter { $0.needsFulfillment }
-            case .inTransit:
-                filtered = filtered.filter { $0.isInTransit && !$0.isUnconfirmed }
-            case .unconfirmed:
-                filtered = filtered.filter { $0.isUnconfirmed }
-            case .delivered:
-                filtered = filtered.filter { $0.isDelivered }
+            filtered = filtered.filter { sale in
+                // Handle special cases
+                if status == .unconfirmed {
+                    return sale.isUnconfirmed
+                } else {
+                    return sale.fulfillmentStatusEnum == status
+                }
+            }
+        }
+        
+        // Filter by search text
+        if !searchText.isEmpty {
+            filtered = filtered.filter { sale in
+                sale.orderNumber?.localizedCaseInsensitiveContains(searchText) ?? false
             }
         }
         
@@ -45,40 +55,21 @@ struct OrdersView: View {
         filteredSales.filter { $0.isPriority || $0.needsAttention }
     }
     
-    // Orders by status (using computed properties to handle nil correctly)
+    // Orders by status
     var needsFulfillmentOrders: [Sale] {
-        allOrders.filter { $0.needsFulfillment && !$0.hasFlagsSet }
+        filteredSales.filter { $0.needsFulfillment && !$0.hasFlagsSet }
     }
     
     var inTransitOrders: [Sale] {
-        allOrders.filter { $0.isInTransit && !$0.isUnconfirmed && !$0.hasFlagsSet }
+        filteredSales.filter { $0.isInTransit && !$0.isUnconfirmed && !$0.hasFlagsSet }
     }
     
     var unconfirmedOrders: [Sale] {
-        allOrders.filter { $0.isUnconfirmed && !$0.hasFlagsSet }
+        filteredSales.filter { $0.isUnconfirmed && !$0.hasFlagsSet }
     }
     
     var deliveredOrders: [Sale] {
-        allOrders.filter { $0.isDelivered && !$0.hasFlagsSet }
-    }
-    
-    // All orders (before priority filtering)
-    var allOrders: [Sale] {
-        var filtered = Array(sales)
-        
-        // Filter by source
-        if let source = selectedSource {
-            filtered = filtered.filter { $0.orderSource == source }
-        }
-        
-        // Filter by search text
-        if !searchText.isEmpty {
-            filtered = filtered.filter { sale in
-                sale.orderNumber?.localizedCaseInsensitiveContains(searchText) ?? false
-            }
-        }
-        
-        return filtered
+        filteredSales.filter { $0.isDelivered && !$0.hasFlagsSet }
     }
     
     var body: some View {
@@ -99,31 +90,13 @@ struct OrdersView: View {
             }
             .navigationTitle("Orders")
             .toolbar {
-                // LEFT SIDE - Refresh button
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: refreshOrders) {
-                        Image(systemName: "arrow.clockwise")
-                    }
-                }
-                
-                // RIGHT SIDE - Charts and Add button
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    // ✅ NEW: Charts navigation link
-                    NavigationLink(destination: OrdersChartsView()) {
-                        Image(systemName: "chart.bar.fill")
-                            .foregroundColor(.blue)
-                    }
-                    
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddOrder = true }) {
                         Image(systemName: "plus.circle.fill")
                     }
                 }
             }
             .searchable(text: $searchText, prompt: "Search order number...")
-            // ✅ NEW: Pull-to-refresh support
-            .refreshable {
-                await refreshOrdersAsync()
-            }
             .sheet(isPresented: $showingAddOrder) {
                 AddSalesView()
                     .environment(\.managedObjectContext, viewContext)
@@ -348,22 +321,7 @@ struct OrdersView: View {
     
     // MARK: - Helpers
     
-    private func refreshOrders() {
-        // Refresh orders from Shopify if configured
-        // For now, just triggers Core Data to refresh
-        // Future: Add Shopify order sync here
-        viewContext.refreshAllObjects()
-    }
-    
-    private func refreshOrdersAsync() async {
-        // For pull-to-refresh gesture
-        refreshOrders()
-        // Small delay to feel responsive
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-    }
-    
     private func countForStatus(_ status: OrderFulfillmentStatus) -> Int {
-        // Count all sales matching this status (using computed properties)
         switch status {
         case .needsFulfillment:
             return sales.filter { $0.needsFulfillment }.count
