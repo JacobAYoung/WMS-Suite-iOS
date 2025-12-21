@@ -58,6 +58,7 @@
 		C8CB35502EF74AFD00C61FCE /* AddJobNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB354F2EF74AFD00C61FCE /* AddJobNoteView.swift */; };
 		C8CB35522EF74B0800C61FCE /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35512EF74B0800C61FCE /* CalendarView.swift */; };
 		C8CB35542EF74C1F00C61FCE /* CustomerDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB35532EF74C1F00C61FCE /* CustomerDetailView.swift */; };
+		C8CB355C2EF7867700C61FCE /* AdaptiveContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB355B2EF7867700C61FCE /* AdaptiveContainer.swift */; };
 		C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */; };
 		C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */; };
 		C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */; };
@@ -135,6 +136,7 @@
 		C8CB354F2EF74AFD00C61FCE /* AddJobNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddJobNoteView.swift; sourceTree = "<group>"; };
 		C8CB35512EF74B0800C61FCE /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		C8CB35532EF74C1F00C61FCE /* CustomerDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerDetailView.swift; sourceTree = "<group>"; };
+		C8CB355B2EF7867700C61FCE /* AdaptiveContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveContainer.swift; sourceTree = "<group>"; };
 		C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepositoryProtocol.swift; sourceTree = "<group>"; };
 		C8FBB5112EEE0D33001FC318 /* InventoryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryRepository.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
+				C8CB355B2EF7867700C61FCE /* AdaptiveContainer.swift */,
 				C8CB35182EF5052200C61FCE /* Enums */,
 				C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */,
 				C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */,
@@ -419,6 +422,7 @@
 				C8CB34FE2EF20D2D00C61FCE /* SalesHistoryDisplay.swift in Sources */,
 				C8FBB51C2EEE0D7A001FC318 /* ShopifyError.swift in Sources */,
 				C8CB350F2EF4F63E00C61FCE /* SortButton.swift in Sources */,
+				C8CB355C2EF7867700C61FCE /* AdaptiveContainer.swift in Sources */,
 				C8CB354C2EF74ADE00C61FCE /* AddJobView.swift in Sources */,
 				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,

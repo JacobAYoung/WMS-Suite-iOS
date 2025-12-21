@@ -2,7 +2,7 @@
 //  InventoryRow.swift
 //  WMS Suite
 //
-//  Row view for inventory list items
+//  ENHANCED: Added quantity source indicator (Local/Shopify/QuickBooks)
 //
 
 import SwiftUI
@@ -17,6 +17,27 @@ struct InventoryRow: View {
             return (.orange, "exclamationmark.triangle.fill")
         } else {
             return (.green, "checkmark.circle.fill")
+        }
+    }
+    
+    // ✅ NEW: Determine quantity source
+    private var quantitySource: String {
+        if item.existsIn(.shopify) {
+            return "Shopify"
+        } else if item.existsIn(.quickbooks) {
+            return "QuickBooks"
+        } else {
+            return "Local"
+        }
+    }
+    
+    private var sourceColor: Color {
+        if item.existsIn(.shopify) {
+            return .green
+        } else if item.existsIn(.quickbooks) {
+            return .orange
+        } else {
+            return .blue
         }
     }
     
@@ -71,8 +92,9 @@ struct InventoryRow: View {
             
             Spacer()
             
-            // Quantity & Status
-            VStack(alignment: .trailing, spacing: 4) {
+            // Quantity & Status with Source Badge
+            VStack(alignment: .trailing, spacing: 6) {
+                // Quantity with stock status
                 HStack(spacing: 4) {
                     Image(systemName: stockStatus.icon)
                         .font(.caption)
@@ -82,6 +104,17 @@ struct InventoryRow: View {
                         .foregroundColor(stockStatus.color)
                 }
                 
+                // ✅ NEW: Source badge for quantity
+                Text(quantitySource)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(sourceColor.opacity(0.15))
+                    .foregroundColor(sourceColor)
+                    .cornerRadius(4)
+                
+                // Min stock level
                 if item.minStockLevel > 0 {
                     Text("Min: \(item.minStockLevel)")
                         .font(.caption2)
