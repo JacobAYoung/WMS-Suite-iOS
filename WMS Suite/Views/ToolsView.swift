@@ -2,7 +2,7 @@
 //  ToolsView.swift
 //  WMS Suite
 //
-//  Consolidated utilities view for barcode scanning and AI counting
+//  Updated: AI Counter temporarily disabled
 //
 
 import SwiftUI
@@ -19,18 +19,43 @@ struct ToolsView: View {
                             icon: "barcode.viewfinder",
                             title: "Barcode Scanner",
                             description: "Scan product barcodes",
-                            color: .blue
+                            color: .blue,
+                            isEnabled: true
                         )
                     }
                     
-                    NavigationLink(destination: CountingView(viewModel: viewModel)) {
-                        ToolRow(
-                            icon: "camera.viewfinder",
-                            title: "AI Counter",
-                            description: "Count items with camera",
-                            color: .green
-                        )
+                    // ✅ DISABLED: AI Counter
+                    HStack(spacing: 16) {
+                        Image(systemName: "camera.viewfinder")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .background(Color.gray)
+                            .cornerRadius(10)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("AI Counter")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                Text("(Coming Soon)")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.orange.opacity(0.2))
+                                    .cornerRadius(4)
+                            }
+                            Text("Count items with camera - Currently being improved")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
                     }
+                    .padding(.vertical, 8)
+                    .opacity(0.6)
+                    
                 } header: {
                     Text("Inventory Tools")
                 }
@@ -41,7 +66,8 @@ struct ToolsView: View {
                             icon: "chart.bar.fill",
                             title: "Product Analytics",
                             description: "View product trends and insights",
-                            color: .purple
+                            color: .purple,
+                            isEnabled: true
                         )
                     }
                     
@@ -50,7 +76,8 @@ struct ToolsView: View {
                             icon: "chart.line.uptrend.xyaxis",
                             title: "Order Analytics",
                             description: "Track order performance",
-                            color: .orange
+                            color: .orange,
+                            isEnabled: true
                         )
                     }
                 } header: {
@@ -69,6 +96,7 @@ struct ToolRow: View {
     let title: String
     let description: String
     let color: Color
+    var isEnabled: Bool = true
     
     var body: some View {
         HStack(spacing: 16) {
@@ -76,12 +104,13 @@ struct ToolRow: View {
                 .font(.title2)
                 .foregroundColor(.white)
                 .frame(width: 50, height: 50)
-                .background(color)
+                .background(isEnabled ? color : Color.gray)
                 .cornerRadius(10)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
+                    .foregroundColor(isEnabled ? .primary : .secondary)
                 Text(description)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -90,5 +119,6 @@ struct ToolRow: View {
             Spacer()
         }
         .padding(.vertical, 8)
+        .opacity(isEnabled ? 1.0 : 0.6)
     }
 }
