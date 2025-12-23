@@ -1,13 +1,15 @@
 //
-//  ShopifySettingsView.swift (UPDATED FOR OAUTH)
+//  ShopifySettingsView.swift (UPDATED WITH ORDER SYNC)
 //  WMS Suite
 //
-//  Updated to use OAuth 2.0 authentication instead of manual tokens
+//  Added order sync functionality
 //
 
 import SwiftUI
+import CoreData
 
 struct ShopifySettingsView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     @AppStorage("shopifyStoreUrl") private var storeUrl = ""
     @AppStorage("shopifyClientId") private var clientId = ""
     
@@ -21,8 +23,13 @@ struct ShopifySettingsView: View {
     @State private var showingInstructions = false
     @State private var useOAuth = false // Default to manual entry (custom apps)
     
+    // ✅ NEW: Order sync states
+    @State private var isSyncingOrders = false
+    @State private var orderSyncStatus: String?
+    @State private var showingOrderSyncAlert = false
+    
     private var isConnected: Bool {
-        ShopifyOAuthManager.shared.hasValidCredentials()
+        ShopifyOAuthManager.shared.hasValidCredentials() || !manualAccessToken.isEmpty
     }
     
     var body: some View {
@@ -112,8 +119,9 @@ struct ShopifySettingsView: View {
                 }
             }
             
-            // Connection Tools Section
+            // ✅ NEW: Sync Actions Section
             Section {
+                // Test Connection
                 if connectionStatus != nil {
                     Label(connectionStatus!, systemImage: connectionStatus!.contains("✅") ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .foregroundColor(connectionStatus!.contains("✅") ? .green : .red)
@@ -131,17 +139,30 @@ struct ShopifySettingsView: View {
                 }
                 .disabled(storeUrl.isEmpty || (!isConnected && !useOAuth && manualAccessToken.isEmpty) || isTestingConnection)
                 
+                // ✅ NEW: Sync Orders Button
+                Button(action: syncOrdersFromShopify) {
+                    if isSyncingOrders {
+                        HStack {
+                            ProgressView()
+                            Text("Syncing Orders...")
+                        }
+                    } else {
+                        Label("Sync Orders from Shopify", systemImage: "arrow.down.circle")
+                    }
+                }
+                .disabled(!isConnected || isSyncingOrders)
+                
                 NavigationLink(destination: ShopifyPermissionsView(
                     storeUrl: storeUrl,
                     accessToken: getCurrentAccessToken()
                 )) {
                     Label("Check Permissions", systemImage: "checkmark.shield")
                 }
-                .disabled(!isConnected && manualAccessToken.isEmpty)
+                .disabled(!isConnected)
             } header: {
-                Text("Connection Tools")
+                Text("Sync & Tools")
             } footer: {
-                Text("Check which API permissions are enabled for your access token")
+                Text("Sync orders imports last 90 days of Shopify orders into your app")
             }
             
             // Setup Instructions Section
@@ -207,6 +228,11 @@ struct ShopifySettingsView: View {
                 ShopifyInstructionsView()
             }
         }
+        .alert("Order Sync Complete", isPresented: $showingOrderSyncAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(orderSyncStatus ?? "Orders synced successfully")
+        }
     }
     
     private func getCurrentAccessToken() -> String {
@@ -262,6 +288,37 @@ struct ShopifySettingsView: View {
                 await MainActor.run {
                     connectionStatus = "❌ Connection failed: \(error.localizedDescription)"
                     isTestingConnection = false
+                }
+            }
+        }
+    }
+    
+    // ✅ NEW: Sync orders from Shopify
+    private func syncOrdersFromShopify() {
+        isSyncingOrders = true
+        orderSyncStatus = nil
+        
+        Task {
+            do {
+                let shopifyService = ShopifyService()
+                
+                var syncMessages: [String] = []
+                
+                try await shopifyService.syncOrders(context: viewContext) { message in
+                    syncMessages.append(message)
+                    print("📦 \(message)")
+                }
+                
+                await MainActor.run {
+                    orderSyncStatus = syncMessages.joined(separator: "\n")
+                    isSyncingOrders = false
+                    showingOrderSyncAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    orderSyncStatus = "❌ Order sync failed: \(error.localizedDescription)"
+                    isSyncingOrders = false
+                    showingOrderSyncAlert = true
                 }
             }
         }
