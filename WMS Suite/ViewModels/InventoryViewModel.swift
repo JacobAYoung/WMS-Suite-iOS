@@ -2,7 +2,7 @@
 //  InventoryViewModel.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/13/25.
+//  Updated: Proper data refresh and Core Data change notifications
 //
 
 import Foundation
@@ -32,21 +32,165 @@ class InventoryViewModel: ObservableObject {
         self.shopifyService = shopifyService
         self.quickbooksService = quickbooksService
         self.barcodeService = barcodeService
+        
+        // ✅ NEW: Listen for Core Data changes
+        setupCoreDataObserver()
+        
         fetchItems()
     }
     
+    // ✅ NEW: Setup Core Data change observer
+    private func setupCoreDataObserver() {
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                // Only refresh if we're not currently loading
+                guard let self = self, !self.isLoading else { return }
+                Task {
+                    await self.fetchItemsImmediately()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
     // MARK: - Inventory Management
+    
+    /// Fetch items from local database (immediate, no loading indicator)
+    @MainActor
+    private func fetchItemsImmediately() async {
+        do {
+            let fetchedItems = try await repository.fetchAllItems()
+            // ✅ CRITICAL: Create a NEW array to force SwiftUI to detect change
+            self.items = []
+            self.items = fetchedItems
+            self.objectWillChange.send()
+        } catch {
+            print("❌ Failed to fetch items: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Fetch items from local database
     func fetchItems() {
-        isLoading = true
         Task { @MainActor in
             do {
-                items = try await repository.fetchAllItems()
-                isLoading = false
+                let fetchedItems = try await repository.fetchAllItems()
+                print("✅ Fetched \(fetchedItems.count) items from database")
+                
+                // ✅ CRITICAL: Create a NEW array to force SwiftUI to detect change
+                self.items = []
+                self.items = fetchedItems
+                
+                // Force objectWillChange to fire
+                self.objectWillChange.send()
             } catch {
                 handleError("Failed to load items", error: error)
-                isLoading = false
             }
         }
+    }
+    
+    /// ✅ NEW: Comprehensive refresh from all sources
+    func refreshAllData() {
+        isLoading = true
+        
+        Task { @MainActor in
+            var logs: [String] = []
+            var hasErrors = false
+            
+            // 1. Refresh local data first
+            do {
+                items = try await repository.fetchAllItems()
+                logs.append("✅ Local data refreshed")
+            } catch {
+                logs.append("❌ Failed to refresh local data: \(error.localizedDescription)")
+                hasErrors = true
+            }
+            
+            // 2. Sync with Shopify (if configured)
+            let shopifyConfigured = !(UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? "").isEmpty &&
+                                    !(UserDefaults.standard.string(forKey: "shopifyAccessToken") ?? "").isEmpty
+            
+            if shopifyConfigured {
+                do {
+                    try await syncShopifyData { message in
+                        logs.append(message)
+                    }
+                    logs.append("✅ Shopify sync completed")
+                } catch {
+                    logs.append("❌ Shopify sync failed: \(error.localizedDescription)")
+                    hasErrors = true
+                }
+            } else {
+                logs.append("⚠️ Shopify not configured")
+            }
+            
+            // 3. Sync with QuickBooks (if configured)
+            let qbConfigured = !(UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? "").isEmpty &&
+                              !(UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? "").isEmpty
+            
+            if qbConfigured {
+                do {
+                    try await syncQuickBooksData()
+                    logs.append("✅ QuickBooks sync completed")
+                } catch {
+                    logs.append("❌ QuickBooks sync failed: \(error.localizedDescription)")
+                    hasErrors = true
+                }
+            } else {
+                logs.append("⚠️ QuickBooks not configured")
+            }
+            
+            // 4. Final refresh of local data
+            do {
+                items = try await repository.fetchAllItems()
+            } catch {
+                logs.append("❌ Failed to reload items after sync")
+                hasErrors = true
+            }
+            
+            // Show results
+            syncMessage = logs.joined(separator: "\n")
+            showingSyncAlert = true
+            isLoading = false
+        }
+    }
+    
+    /// ✅ NEW: Sync QuickBooks data
+    private func syncQuickBooksData() async throws {
+        let companyId = UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? ""
+        let accessToken = UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? ""
+        let refreshToken = UserDefaults.standard.string(forKey: "quickbooksRefreshToken") ?? ""
+        
+        guard !companyId.isEmpty && !accessToken.isEmpty else {
+            throw AppError.missingCredentials("QuickBooks not configured")
+        }
+        
+        // Create service and sync
+        let service = QuickBooksService(
+            companyId: companyId,
+            accessToken: accessToken,
+            refreshToken: refreshToken
+        )
+        
+        _ = try await service.syncInventory()
+        
+        // Note: syncInventory returns items but we'll fetch fresh from DB
+        // to ensure we have the latest data
+    }
+    
+    /// ✅ NEW: Sync Shopify data (extracted from syncWithShopify)
+    private func syncShopifyData(logMismatch: @escaping (String) -> Void) async throws {
+        let storeUrl = UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? ""
+        let accessToken = UserDefaults.standard.string(forKey: "shopifyAccessToken") ?? ""
+        
+        if let service = shopifyService as? ShopifyService {
+            service.updateCredentials(storeUrl: storeUrl, accessToken: accessToken)
+        }
+        
+        try await shopifyService.syncInventory(
+            localItems: items,
+            repo: repository,
+            logMismatch: logMismatch
+        )
     }
     
     func addItem(sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Int32, minStockLevel: Int32, imageUrl: String? = nil) {
@@ -62,8 +206,7 @@ class InventoryViewModel: ObservableObject {
                     minStockLevel: minStockLevel,
                     imageUrl: imageUrl
                 )
-                items.append(newItem)
-                items.sort { ($0.name ?? "") < ($1.name ?? "") }
+                // Note: fetchItems() will be called automatically via Core Data observer
             } catch {
                 handleError("Failed to add item", error: error)
             }
@@ -82,7 +225,7 @@ class InventoryViewModel: ObservableObject {
                 item.minStockLevel = minStockLevel
                 item.lastUpdated = Date()
                 try await repository.updateItem(item)
-                fetchItems()
+                // Note: fetchItems() will be called automatically via Core Data observer
             } catch {
                 handleError("Failed to update item", error: error)
             }
@@ -93,14 +236,15 @@ class InventoryViewModel: ObservableObject {
         Task { @MainActor in
             do {
                 try await repository.deleteItem(item)
-                items.removeAll { $0.id == item.id }
+                // Note: fetchItems() will be called automatically via Core Data observer
             } catch {
                 handleError("Failed to delete item", error: error)
             }
         }
     }
     
-    // MARK: - Shopify Integration
+    // MARK: - Shopify Integration (Legacy - kept for compatibility)
+    
     func syncWithShopify() {
         let storeUrl = UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? ""
         let accessToken = UserDefaults.standard.string(forKey: "shopifyAccessToken") ?? ""
@@ -173,7 +317,7 @@ class InventoryViewModel: ObservableObject {
                 
                 Task {
                     try? await repository.updateItem(item)
-                    fetchItems()
+                    // Note: fetchItems() will be called automatically via Core Data observer
                 }
             }
         } catch {
@@ -208,7 +352,7 @@ class InventoryViewModel: ObservableObject {
                 
                 Task {
                     try? await repository.updateItem(item)
-                    fetchItems()
+                    // Note: fetchItems() will be called automatically via Core Data observer
                 }
             }
         } catch {
@@ -292,6 +436,7 @@ class InventoryViewModel: ObservableObject {
         
         errorMessage = "\(message): \(userMessage)"
         showingError = true
+        print("❌ \(message): \(userMessage)")
     }
 }
 

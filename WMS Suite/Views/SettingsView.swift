@@ -2,7 +2,7 @@
 //  SettingsView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/13/25.
+//  UPDATED: Added QuickBooks integration section
 //
 
 import SwiftUI
@@ -22,37 +22,43 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Shopify Integration") {
-                    TextField("Store URL", text: $shopifyStoreUrl)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .textContentType(.URL)
-                    
-                    SecureField("Access Token", text: $shopifyAccessToken)
-                        .textContentType(.password)
-                    
-                    Toggle("Auto Sync", isOn: $enableAutoSync)
-                    
-                    if enableAutoSync {
-                        Picker("Sync Interval", selection: $syncInterval) {
-                            Text("15 minutes").tag(15)
-                            Text("30 minutes").tag(30)
-                            Text("1 hour").tag(60)
-                            Text("2 hours").tag(120)
-                            Text("4 hours").tag(240)
-                        }
-                    }
-                    
-                    Button(action: testShopifyConnection) {
-                        HStack {
-                            if isTestingConnection {
-                                ProgressView()
-                                    .padding(.trailing, 4)
+                // SECTION: Integrations
+                Section("Integrations") {
+                    // Shopify
+                    NavigationLink(destination: ShopifySettingsView()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "cart.fill")
+                                .font(.title3)
+                                .foregroundColor(.green)
+                                .frame(width: 32)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Shopify")
+                                    .font(.headline)
+                                Text(shopifyStoreUrl.isEmpty ? "Not configured" : shopifyStoreUrl)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                             }
-                            Text(isTestingConnection ? "Testing..." : "Test Connection")
                         }
                     }
-                    .disabled(shopifyStoreUrl.isEmpty || shopifyAccessToken.isEmpty || isTestingConnection)
+                    
+                    // QuickBooks (NEW!)
+                    NavigationLink(destination: QuickBooksSettingsView()) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "book.fill")
+                                .font(.title3)
+                                .foregroundColor(.orange)
+                                .frame(width: 32)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("QuickBooks")
+                                    .font(.headline)
+                                Text(qbConnectionStatus)
+                                    .font(.caption)
+                                    .foregroundColor(qbConnectionStatusColor)
+                            }
+                        }
+                    }
                 }
                 .headerProminence(.increased)
                 
@@ -94,15 +100,19 @@ struct SettingsView: View {
                 }
                 
                 Section("About") {
-                    Link(destination: URL(string: "https://github.com/yourusername/wms-suite")!) {
+                    Link(destination: URL(string: "https://harbordesksystems.com")!) {
+                        Label("Website", systemImage: "globe")
+                    }
+                    
+                    Link(destination: URL(string: "https://github.com/JacobAYoung/WMS-Suite-iOS")!) {
                         Label("GitHub Repository", systemImage: "link")
                     }
                     
-                    Link(destination: URL(string: "https://yourdomain.com/privacy")!) {
+                    Link(destination: URL(string: "https://harbordesksystems.com/privacy")!) {
                         Label("Privacy Policy", systemImage: "hand.raised")
                     }
                     
-                    Link(destination: URL(string: "https://yourdomain.com/terms")!) {
+                    Link(destination: URL(string: "https://harbordesksystems.com/terms")!) {
                         Label("Terms of Service", systemImage: "doc.text")
                     }
                 }
@@ -123,6 +133,26 @@ struct SettingsView: View {
             }
         }
     }
+    
+    // MARK: - QuickBooks Status Helper
+    
+    private var qbConnectionStatus: String {
+        let tokenManager = QuickBooksTokenManager.shared
+        if tokenManager.isAuthenticated {
+            if let companyId = tokenManager.getCompanyId() {
+                return "Connected - \(companyId)"
+            }
+            return "Connected"
+        } else {
+            return "Not connected"
+        }
+    }
+    
+    private var qbConnectionStatusColor: Color {
+        QuickBooksTokenManager.shared.isAuthenticated ? .green : .secondary
+    }
+    
+    // MARK: - Shopify Connection Test
     
     private func testShopifyConnection() {
         guard !shopifyStoreUrl.isEmpty && !shopifyAccessToken.isEmpty else {
@@ -217,6 +247,8 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - Data Management
+    
     private func exportData() {
         let csvString = generateCSV()
         shareCSV(csvString)
@@ -266,4 +298,13 @@ struct SettingsView: View {
             viewModel.deleteItem(item)
         }
     }
+}
+
+#Preview {
+    SettingsView(viewModel: InventoryViewModel(
+        repository: InventoryRepository(context: PersistenceController.preview.container.viewContext),
+        shopifyService: ShopifyService(storeUrl: "", accessToken: ""),
+        quickbooksService: QuickBooksService(companyId: "", accessToken: "", refreshToken: ""),
+        barcodeService: BarcodeService()
+    ))
 }

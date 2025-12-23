@@ -1,36 +1,118 @@
 //
-//  ShopifySettingsView.swift (UPDATED)
+//  ShopifySettingsView.swift (UPDATED FOR OAUTH)
 //  WMS Suite
 //
-//  Updated to include permissions checker
+//  Updated to use OAuth 2.0 authentication instead of manual tokens
 //
 
 import SwiftUI
 
 struct ShopifySettingsView: View {
     @AppStorage("shopifyStoreUrl") private var storeUrl = ""
-    @AppStorage("shopifyAccessToken") private var accessToken = ""
+    @AppStorage("shopifyClientId") private var clientId = ""
+    
+    // For manual token entry (fallback)
+    @AppStorage("shopifyAccessToken") private var manualAccessToken = ""
     
     @State private var connectionStatus: String?
     @State private var isTestingConnection = false
     @State private var showingPermissions = false
+    @State private var showingOAuthView = false
+    @State private var showingInstructions = false
+    @State private var useOAuth = false // Default to manual entry (custom apps)
+    
+    private var isConnected: Bool {
+        ShopifyOAuthManager.shared.hasValidCredentials()
+    }
     
     var body: some View {
         Form {
-            Section {
-                TextField("Store URL", text: $storeUrl)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .keyboardType(.URL)
-                
-                SecureField("Access Token", text: $accessToken)
-                    .textContentType(.password)
-            } header: {
-                Text("Credentials")
-            } footer: {
-                Text("Enter your-store.myshopify.com (without https://)")
+            // Connection Status Section
+            if isConnected {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Connected")
+                                .font(.headline)
+                                .foregroundColor(.green)
+                            Text(storeUrl)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.title2)
+                    }
+                    
+                    Button(role: .destructive) {
+                        disconnectShopify()
+                    } label: {
+                        Label("Disconnect", systemImage: "xmark.circle")
+                    }
+                } header: {
+                    Text("Status")
+                }
             }
             
+            // OAuth Configuration Section
+            Section {
+                Toggle("Use OAuth 2.0 (For Public Apps)", isOn: $useOAuth)
+                
+                if useOAuth {
+                    TextField("Store URL", text: $storeUrl)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                        .disabled(isConnected)
+                    
+                    TextField("Client ID", text: $clientId)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .disabled(isConnected)
+                    
+                    if !isConnected {
+                        Button(action: { showingOAuthView = true }) {
+                            HStack {
+                                Image(systemName: "lock.shield")
+                                Text("Connect with OAuth")
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(storeUrl.isEmpty || clientId.isEmpty)
+                    }
+                }
+            } header: {
+                Text("OAuth Authentication")
+            } footer: {
+                if useOAuth {
+                    Text("OAuth is for public apps that need to support multiple stores.")
+                } else {
+                    Text("Custom apps (like yours) use Admin API access tokens directly. This is the recommended approach for single-store usage.")
+                }
+            }
+            
+            // Manual Token Section (Fallback)
+            if !useOAuth {
+                Section {
+                    TextField("Store URL", text: $storeUrl)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .keyboardType(.URL)
+                    
+                    SecureField("Access Token", text: $manualAccessToken)
+                        .textContentType(.password)
+                } header: {
+                    Text("Manual Credentials")
+                } footer: {
+                    Text("For Shopify custom apps, this is the correct and secure method. Your Admin API access token doesn't expire.")
+                }
+            }
+            
+            // Connection Tools Section
             Section {
                 if connectionStatus != nil {
                     Label(connectionStatus!, systemImage: connectionStatus!.contains("✅") ? "checkmark.circle.fill" : "xmark.circle.fill")
@@ -47,54 +129,49 @@ struct ShopifySettingsView: View {
                         Label("Test Connection", systemImage: "network")
                     }
                 }
-                .disabled(storeUrl.isEmpty || accessToken.isEmpty || isTestingConnection)
+                .disabled(storeUrl.isEmpty || (!isConnected && !useOAuth && manualAccessToken.isEmpty) || isTestingConnection)
                 
-                NavigationLink(destination: ShopifyPermissionsView(storeUrl: storeUrl, accessToken: accessToken)) {
+                NavigationLink(destination: ShopifyPermissionsView(
+                    storeUrl: storeUrl,
+                    accessToken: getCurrentAccessToken()
+                )) {
                     Label("Check Permissions", systemImage: "checkmark.shield")
                 }
-                .disabled(storeUrl.isEmpty || accessToken.isEmpty)
+                .disabled(!isConnected && manualAccessToken.isEmpty)
             } header: {
-                Text("Connection")
+                Text("Connection Tools")
             } footer: {
                 Text("Check which API permissions are enabled for your access token")
             }
             
+            // Setup Instructions Section
             Section {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Setup Instructions")
                         .font(.headline)
                     
-                    Text("1. Go to your Shopify Admin")
-                        .font(.caption)
-                    Text("2. Apps → Develop apps → Create an app")
-                        .font(.caption)
-                    Text("3. Configure Admin API scopes:")
-                        .font(.caption)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("   • read_products")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("   • write_products")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("   • read_inventory")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("   • write_inventory")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("   • read_orders")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                    if useOAuth {
+                        Text("For Public Apps Only")
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                        SetupStep(number: 1, text: "Create a public app via Shopify Partners")
+                        SetupStep(number: 2, text: "Configure Admin API access scopes")
+                        SetupStep(number: 3, text: "Copy your Client ID (API key)")
+                        SetupStep(number: 4, text: "Enter Store URL and Client ID above")
+                        SetupStep(number: 5, text: "Tap 'Connect with OAuth'")
+                        SetupStep(number: 6, text: "Authorize the app in your browser")
+                    } else {
+                        Text("For Custom Apps (Current Setup)")
+                            .font(.subheadline)
+                            .foregroundColor(.green)
+                        SetupStep(number: 1, text: "Your custom app 'wms suite' is already created")
+                        SetupStep(number: 2, text: "All required scopes are already configured ✓")
+                        SetupStep(number: 3, text: "Go to API credentials tab")
+                        SetupStep(number: 4, text: "Copy your Admin API access token")
+                        SetupStep(number: 5, text: "Enter Store URL: wms-suite.myshopify.com")
+                        SetupStep(number: 6, text: "Paste the access token above")
+                        SetupStep(number: 7, text: "Tap 'Test Connection' to verify")
                     }
-                    
-                    Text("4. Install app and copy Access Token")
-                        .font(.caption)
-                    Text("5. Enter credentials above")
-                        .font(.caption)
-                    Text("6. Tap 'Check Permissions' to verify setup")
-                        .font(.caption)
                     
                     Link(destination: URL(string: "https://admin.shopify.com")!) {
                         HStack {
@@ -104,12 +181,39 @@ struct ShopifySettingsView: View {
                         .font(.subheadline)
                     }
                     .padding(.top, 8)
+                    
+                    Button(action: { showingInstructions = true }) {
+                        HStack {
+                            Text("View Detailed Guide")
+                            Image(systemName: "book")
+                        }
+                        .font(.subheadline)
+                    }
+                    .padding(.top, 4)
                 }
             } header: {
                 Text("How to Get Credentials")
             }
         }
         .navigationTitle("Shopify")
+        .sheet(isPresented: $showingOAuthView) {
+            ShopifyOAuthView(storeUrl: storeUrl) { token in
+                connectionStatus = "✅ Connected successfully via OAuth"
+                // Token is already stored by ShopifyOAuthManager
+            }
+        }
+        .sheet(isPresented: $showingInstructions) {
+            NavigationView {
+                ShopifyInstructionsView()
+            }
+        }
+    }
+    
+    private func getCurrentAccessToken() -> String {
+        if useOAuth, let token = ShopifyOAuthManager.shared.getAccessToken(for: storeUrl) {
+            return token
+        }
+        return manualAccessToken
     }
     
     private func testConnection() {
@@ -118,7 +222,11 @@ struct ShopifySettingsView: View {
         
         Task {
             do {
-                let service = ShopifyService(storeUrl: storeUrl, accessToken: accessToken)
+                let accessToken = getCurrentAccessToken()
+                
+                guard !accessToken.isEmpty else {
+                    throw ShopifyError.missingCredentials
+                }
                 
                 // Try a simple GraphQL query
                 let url = URL(string: "https://\(storeUrl)/admin/api/2025-01/graphql.json")!
@@ -156,6 +264,107 @@ struct ShopifySettingsView: View {
                     isTestingConnection = false
                 }
             }
+        }
+    }
+    
+    private func disconnectShopify() {
+        ShopifyOAuthManager.shared.revokeAccess()
+        storeUrl = ""
+        manualAccessToken = ""
+        connectionStatus = "Disconnected from Shopify"
+    }
+}
+
+// MARK: - Setup Step Helper
+
+struct SetupStep: View {
+    let number: Int
+    let text: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("\(number).")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(width: 20, alignment: .leading)
+            Text(text)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - Instructions View
+
+struct ShopifyInstructionsView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Shopify Integration Setup")
+                    .font(.title)
+                    .bold()
+                
+                Text("For Custom Apps (Your Current Setup)")
+                    .font(.title2)
+                    .foregroundColor(.green)
+                
+                Group {
+                    Text("What You Already Have ✓")
+                        .font(.headline)
+                    Text("• Custom app 'wms suite' created\n• All required API scopes configured\n• Admin API access token generated\n• Ready to connect!")
+                        .foregroundColor(.green)
+                    
+                    Text("How to Connect")
+                        .font(.headline)
+                    Text("1. Go to your app's 'API credentials' tab\n2. Copy the 'Admin API access token' (ends in eb9c)\n3. In WMS Suite app, go to Settings → Shopify\n4. Enter Store URL: wms-suite.myshopify.com\n5. Paste the access token\n6. Tap 'Test Connection'\n7. Done!")
+                    
+                    Text("Why Custom Apps Don't Need OAuth")
+                        .font(.headline)
+                    Text("Custom apps are designed for single-store, private use. They use permanent Admin API tokens that are just as secure as OAuth. OAuth is only needed for public apps that install on multiple stores.")
+                        .foregroundColor(.secondary)
+                }
+                .font(.subheadline)
+                
+                Divider()
+                    .padding(.vertical)
+                
+                Text("For Public Apps (Future Use)")
+                    .font(.title2)
+                    .foregroundColor(.orange)
+                
+                Group {
+                    Text("If You Build a Public App Later")
+                        .font(.headline)
+                    Text("Public apps are distributed via the Shopify App Store and can be installed by any store. This requires OAuth.")
+                    
+                    Text("OAuth Setup Steps")
+                        .font(.headline)
+                    Text("1. Create app in Shopify Partners (not Shopify Admin)\n2. Configure OAuth redirect URL: wmssuite://shopify/callback\n3. Get Client ID from partner dashboard\n4. In WMS Suite, enable 'Use OAuth 2.0'\n5. Enter Client ID and tap 'Connect with OAuth'\n6. Complete authorization in browser")
+                }
+                .font(.subheadline)
+            }
+            .padding()
+        }
+        .navigationTitle("Setup Guide")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") {
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Preview
+
+struct ShopifySettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            ShopifySettingsView()
         }
     }
 }

@@ -11,6 +11,8 @@
 		C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258742EE9057E0028BF7B /* ContentView.swift */; };
 		C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */; };
 		C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */; };
+		C856DA792EFB303800A14F89 /* ShopifyOAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */; };
+		C856DA7B2EFB304B00A14F89 /* ShopifyOAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */; };
 		C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48262EEE288C0088DD7D /* AddSalesView.swift */; };
 		C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */; };
 		C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */; };
@@ -88,6 +90,8 @@
 		C82258742EE9057E0028BF7B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WMS_SuiteApp.swift; sourceTree = "<group>"; };
 		C82258792EE9057E0028BF7B /* WMS_Suite.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WMS_Suite.xcdatamodel; sourceTree = "<group>"; };
+		C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyOAuthManager.swift; sourceTree = "<group>"; };
+		C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyOAuthView.swift; sourceTree = "<group>"; };
 		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8AC48262EEE288C0088DD7D /* AddSalesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSalesView.swift; sourceTree = "<group>"; };
 		C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryView.swift; sourceTree = "<group>"; };
@@ -241,6 +245,7 @@
 		C8CB34F22EEF6AF400C61FCE /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */,
 				C8CB35272EF5FB2700C61FCE /* OrderNoteModel.swift */,
 				C8CB34FD2EF20D1E00C61FCE /* SalesHistoryDisplay.swift */,
 			);
@@ -250,6 +255,7 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */,
 				C8CB35532EF74C1F00C61FCE /* CustomerDetailView.swift */,
 				C8CB35512EF74B0800C61FCE /* CalendarView.swift */,
 				C8CB354F2EF74AFD00C61FCE /* AddJobNoteView.swift */,
@@ -456,6 +462,7 @@
 				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,
 				C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */,
 				C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */,
+				C856DA7B2EFB304B00A14F89 /* ShopifyOAuthView.swift in Sources */,
 				C8CB35242EF5FAE600C61FCE /* Sale+fulfillmentextensions.swift in Sources */,
 				C8CB35022EF4B94F00C61FCE /* ShopifyPermissionsView.swift in Sources */,
 				C8CB352E2EF6003700C61FCE /* OrderPickListView.swift in Sources */,
@@ -479,6 +486,7 @@
 				C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */,
 				C8CB35522EF74B0800C61FCE /* CalendarView.swift in Sources */,
 				C8CB350B2EF4F43100C61FCE /* InventorySortFilter.swift in Sources */,
+				C856DA792EFB303800A14F89 /* ShopifyOAuthManager.swift in Sources */,
 				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
 				C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */,
 				C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */,

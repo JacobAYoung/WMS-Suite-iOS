@@ -2,7 +2,7 @@
 //  ProductDetailView.swift
 //  WMS Suite
 //
-//  FIXED: Refreshes sales history when returning from AddSalesView
+//  FIXED: Explicitly refreshes ViewModel when returning from EditItemView
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct ProductDetailView: View {
     @State private var salesHistory: [SalesHistoryDisplay] = []
     @State private var showingForecastDetail = false
     @State private var quickForecast: ForecastResult?
-    @State private var refreshTrigger = false  // ✅ NEW: Trigger for refresh
+    @State private var refreshTrigger = UUID()  // ✅ NEW: Force view refresh
     
     // MARK: - Computed Properties
     
@@ -59,22 +59,30 @@ struct ProductDetailView: View {
         }
         .navigationTitle("Product Details")
         .navigationBarTitleDisplayMode(.inline)
+        .id(refreshTrigger)  // ✅ NEW: Force view to rebuild when this changes
         .onAppear {
             loadSalesHistory()
             loadQuickForecast()
         }
-        // ✅ NEW: Refresh when returning from sheets
+        // ✅ UPDATED: Refresh when returning from sheets
         .onChange(of: showingAddSale) { isShowing in
             if !isShowing {
                 // Sheet was dismissed, refresh data
                 loadSalesHistory()
                 loadQuickForecast()
+                // Force ViewModel to reload items list
+                viewModel.fetchItems()
             }
         }
         .onChange(of: showingEditItem) { isShowing in
             if !isShowing {
-                // Sheet was dismissed, refresh data
+                // ✅ CRITICAL: Force complete refresh when edit sheet closes
+                print("🔄 EditItemView closed, refreshing data...")
                 loadSalesHistory()
+                // Force ViewModel to reload items from database
+                viewModel.fetchItems()
+                // Force this view to rebuild
+                refreshTrigger = UUID()
             }
         }
         .sheet(isPresented: $showingEditItem) {

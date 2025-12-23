@@ -19,11 +19,61 @@
                 <key>NSExceptionMinimumTLSVersion</key>
                 <string>TLSv1.2</string>
             </dict>
+            <key>quickbooks.api.intuit.com</key>
+            <dict>
+                <key>NSExceptionRequiresForwardSecrecy</key>
+                <false/>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+                <key>NSExceptionMinimumTLSVersion</key>
+                <string>TLSv1.2</string>
+            </dict>
+            <key>sandbox-quickbooks.api.intuit.com</key>
+            <dict>
+                <key>NSExceptionRequiresForwardSecrecy</key>
+                <false/>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+                <key>NSExceptionMinimumTLSVersion</key>
+                <string>TLSv1.2</string>
+            </dict>
+            <!-- Added for Intuit OAuth -->
+            <key>oauth.platform.intuit.com</key>
+            <dict>
+                <key>NSExceptionRequiresForwardSecrecy</key>
+                <false/>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+                <key>NSExceptionMinimumTLSVersion</key>
+                <string>TLSv1.2</string>
+            </dict>
         </dict>
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>Camera access is needed for jobs, count products and scan barcodes</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Photo library access for saving barcodes and jobs for documentation.</string>
+    
+    <!-- URL Schemes for OAuth callbacks (Shopify and QuickBooks) -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>wmssuite</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>com.harbordesksystems.wmssuite</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+    </array>
+    
+    <!-- Allow queries to open external apps if needed -->
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>https</string>
+        <string>http</string>
+    </array>
 </dict>
 </plist>
