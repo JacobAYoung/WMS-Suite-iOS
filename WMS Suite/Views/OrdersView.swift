@@ -2,7 +2,7 @@
 //  OrdersView.swift
 //  WMS Suite
 //
-//  Enhanced: Added status sections, priority orders, fulfillment filtering
+//  Updated: Added refresh button and charts button back to toolbar
 //
 
 import SwiftUI
@@ -19,6 +19,8 @@ struct OrdersView: View {
     @State private var selectedSource: OrderSource? = nil
     @State private var selectedStatus: OrderFulfillmentStatus? = nil
     @State private var showingAddOrder = false
+    @State private var isRefreshing = false
+    @State private var refreshID = UUID()  // Force view refresh
     
     var filteredSales: [Sale] {
         var filtered = Array(sales)
@@ -90,7 +92,28 @@ struct OrdersView: View {
             }
             .navigationTitle("Orders")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                // ✅ LEFT SIDE - Refresh button
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: refreshOrders) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.clockwise")
+                            if isRefreshing {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                        }
+                    }
+                    .disabled(isRefreshing)
+                }
+                
+                // ✅ RIGHT SIDE - Charts and Add buttons
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // ✅ Charts navigation link
+                    NavigationLink(destination: OrdersChartsView()) {
+                        Image(systemName: "chart.bar.fill")
+                            .foregroundColor(.blue)
+                    }
+                    
                     Button(action: { showingAddOrder = true }) {
                         Image(systemName: "plus.circle.fill")
                     }
@@ -100,6 +123,9 @@ struct OrdersView: View {
             .sheet(isPresented: $showingAddOrder) {
                 AddSalesView()
                     .environment(\.managedObjectContext, viewContext)
+            }
+            .refreshable {
+                await refreshOrdersAsync()
             }
         }
     }
@@ -274,6 +300,7 @@ struct OrdersView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .id(refreshID)  // Force list to rebuild when this changes
     }
     
     // MARK: - Empty State
@@ -317,6 +344,40 @@ struct OrdersView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
+    }
+    
+    // MARK: - Refresh Methods
+    
+    /// ✅ Refresh orders data
+    private func refreshOrders() {
+        isRefreshing = true
+        print("🔄 Refreshing orders data...")
+        
+        Task {
+            // Force Core Data to refetch
+            await MainActor.run {
+                viewContext.refreshAllObjects()
+                
+                // Force view to rebuild
+                refreshID = UUID()
+                
+                isRefreshing = false
+                print("✅ Orders refreshed")
+            }
+        }
+    }
+    
+    /// ✅ Async version for pull-to-refresh
+    private func refreshOrdersAsync() async {
+        print("🔄 Pull-to-refresh triggered...")
+        
+        // Force Core Data to refetch
+        await MainActor.run {
+            viewContext.refreshAllObjects()
+            refreshID = UUID()
+        }
+        
+        print("✅ Orders refreshed")
     }
     
     // MARK: - Helpers
