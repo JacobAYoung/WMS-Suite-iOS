@@ -2,7 +2,7 @@
 //  InventoryView.swift
 //  WMS Suite
 //
-//  Main inventory list with sorting and filtering
+//  Updated: Refresh button now syncs all sources (Local, Shopify, QuickBooks)
 //
 
 import SwiftUI
@@ -12,6 +12,7 @@ struct InventoryView: View {
     @ObservedObject var viewModel: InventoryViewModel
     @State private var searchText = ""
     @State private var showingAddItem = false
+    @State private var refreshID = UUID()  // ✅ NEW: Force view refresh
     
     // Sorting and Filtering
     @State private var selectedSort: InventorySortOption = .nameAZ
@@ -54,9 +55,9 @@ struct InventoryView: View {
             }
             .navigationTitle("Inventory")
             .toolbar {
-                // LEFT SIDE - Refresh button
+                // LEFT SIDE - Refresh button (now syncs all sources)
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: refreshData) {
+                    Button(action: refreshAllData) {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.clockwise")
                             if viewModel.isLoading {
@@ -70,7 +71,7 @@ struct InventoryView: View {
                 
                 // RIGHT SIDE - Charts, Filter, Sort, Add
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    // ✅ NEW: Charts navigation link
+                    // Charts navigation link
                     NavigationLink(destination: ProductsChartsView()) {
                         Image(systemName: "chart.bar.fill")
                             .foregroundColor(.blue)
@@ -94,7 +95,7 @@ struct InventoryView: View {
                 Text(viewModel.syncMessage)
             }
             .refreshable {
-                await refreshDataAsync()
+                await refreshAllDataAsync()
             }
         }
     }
@@ -118,16 +119,26 @@ struct InventoryView: View {
                 .onDelete(perform: deleteItems)
             }
             .listStyle(.plain)
+            .id(refreshID)  // ✅ NEW: Force list to rebuild when this changes
+        }
+        .onAppear {
+            // ✅ NEW: Refresh when view appears (e.g., navigating back)
+            print("📱 InventoryView appeared, refreshing...")
+            viewModel.fetchItems()
+            refreshID = UUID()
         }
     }
     
-    private func refreshData() {
-        viewModel.syncWithShopify()
+    /// ✅ UPDATED: Now refreshes ALL sources (Local, Shopify, QuickBooks)
+    private func refreshAllData() {
+        viewModel.refreshAllData()
     }
     
-    private func refreshDataAsync() async {
-        viewModel.syncWithShopify()
+    /// ✅ UPDATED: Async version for pull-to-refresh
+    private func refreshAllDataAsync() async {
+        viewModel.refreshAllData()
         
+        // Wait for loading to complete
         while viewModel.isLoading {
             try? await Task.sleep(nanoseconds: 100_000_000)
         }

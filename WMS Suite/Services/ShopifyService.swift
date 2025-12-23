@@ -1,8 +1,8 @@
 //
-//  ShopifyService.swift
+//  ShopifyService.swift (UPDATED FOR OAUTH)
 //  WMS Suite
 //
-//  Fixed: Now checks database to prevent duplicates
+//  Updated to support OAuth authentication
 //
 
 import Foundation
@@ -17,10 +17,60 @@ class ShopifyService: ShopifyServiceProtocol {
         self.accessToken = accessToken
     }
     
+    /// Convenience initializer that gets token from OAuth manager
+    convenience init() {
+        let storeUrl = UserDefaults.standard.string(forKey: "shopifyStoreUrl") ?? ""
+        let accessToken = ShopifyOAuthManager.shared.getAccessToken(for: storeUrl) ?? ""
+        self.init(storeUrl: storeUrl, accessToken: accessToken)
+    }
+    
     func updateCredentials(storeUrl: String, accessToken: String) {
         self.storeUrl = storeUrl
         self.accessToken = accessToken
     }
+    
+    // MARK: - Authenticated Request Helper
+    
+    /// Make an authenticated request using stored OAuth token
+    private func makeAuthenticatedRequest(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        var modifiedRequest = request
+        
+        // Try to get the latest token from OAuth manager
+        if let latestToken = ShopifyOAuthManager.shared.getAccessToken(for: storeUrl), !latestToken.isEmpty {
+            self.accessToken = latestToken
+        }
+        
+        // Set the access token header
+        modifiedRequest.setValue(accessToken, forHTTPHeaderField: "X-Shopify-Access-Token")
+        modifiedRequest.timeoutInterval = 60
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: modifiedRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw ShopifyError.invalidResponse
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                // Try to extract error message
+                if let errorJson = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let errors = errorJson["errors"] as? [String: Any] {
+                    print("Shopify API Error: \(errors)")
+                }
+                throw ShopifyError.httpError(statusCode: httpResponse.statusCode)
+            }
+            
+            return (data, httpResponse)
+            
+        } catch let error as ShopifyError {
+            throw error
+        } catch {
+            print("❌ Shopify request error: \(error)")
+            throw ShopifyError.invalidResponse
+        }
+    }
+    
+    // MARK: - Sync Inventory
     
     func syncInventory(localItems: [InventoryItem], repo: InventoryRepositoryProtocol, logMismatch: @escaping (String) -> Void) async throws {
         guard !accessToken.isEmpty && !storeUrl.isEmpty else {
@@ -31,8 +81,6 @@ class ShopifyService: ShopifyServiceProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(accessToken, forHTTPHeaderField: "X-Shopify-Access-Token")
-        request.timeoutInterval = 60
         
         let query = """
         {
@@ -62,17 +110,7 @@ class ShopifyService: ShopifyServiceProtocol {
         request.httpBody = try JSONSerialization.data(withJSONObject: ["query": query], options: [])
         
         print("Syncing inventory from Shopify...")
-        let (data, response) = try await NetworkService.performRequest(request: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw ShopifyError.invalidResponse
-        }
-        
-        print("Shopify sync response code: \(httpResponse.statusCode)")
-        
-        guard (200...299).contains(httpResponse.statusCode) else {
-            throw ShopifyError.httpError(statusCode: httpResponse.statusCode)
-        }
+        let (data, _) = try await makeAuthenticatedRequest(request)
         
         guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let dataDict = result["data"] as? [String: Any],
@@ -84,7 +122,7 @@ class ShopifyService: ShopifyServiceProtocol {
         
         print("Found \(edges.count) products from Shopify")
         
-        // ✅ FIX: Get fresh items from database each time to prevent duplicates
+        // Get fresh items from database to prevent duplicates
         let freshItems = try await repo.fetchAllItems()
         
         for edge in edges {
@@ -111,7 +149,7 @@ class ShopifyService: ShopifyServiceProtocol {
                     continue
                 }
                 
-                // ✅ FIX: Check freshItems (from database) instead of localItems (old in-memory)
+                // Check if item exists in database
                 if let localItem = freshItems.first(where: { $0.sku == sku }) {
                     // Update existing item
                     var needsUpdate = false
@@ -122,7 +160,6 @@ class ShopifyService: ShopifyServiceProtocol {
                         needsUpdate = true
                     }
                     
-                    // Always update Shopify ID and sync date if from Shopify
                     if localItem.shopifyProductId != productId {
                         localItem.shopifyProductId = productId
                         needsUpdate = true
@@ -152,7 +189,6 @@ class ShopifyService: ShopifyServiceProtocol {
                         imageUrl: imageUrl
                     )
                     
-                    // Set Shopify ID after creation
                     newItem.shopifyProductId = productId
                     newItem.lastSyncedShopifyDate = Date()
                     try await repo.updateItem(newItem)
@@ -165,6 +201,8 @@ class ShopifyService: ShopifyServiceProtocol {
         
         print("Shopify sync completed")
     }
+    
+    // MARK: - Fetch Recent Sales
     
     func fetchRecentSales(for item: InventoryItem) async throws -> [SalesHistoryDisplay] {
         var allSales: [SalesHistoryDisplay] = []
@@ -212,7 +250,6 @@ class ShopifyService: ShopifyServiceProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(accessToken, forHTTPHeaderField: "X-Shopify-Access-Token")
         
         let query = """
         {
@@ -238,12 +275,7 @@ class ShopifyService: ShopifyServiceProtocol {
         
         request.httpBody = try JSONSerialization.data(withJSONObject: ["query": query], options: [])
         
-        let (data, response) = try await NetworkService.performRequest(request: request)
-        
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            throw ShopifyError.invalidResponse
-        }
+        let (data, _) = try await makeAuthenticatedRequest(request)
         
         guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let dataDict = result["data"] as? [String: Any],
@@ -284,6 +316,8 @@ class ShopifyService: ShopifyServiceProtocol {
         
         return salesHistory
     }
+    
+    // MARK: - Push Item
     
     func pushItem(_ item: InventoryItem) async throws -> String {
         guard !accessToken.isEmpty && !storeUrl.isEmpty else {

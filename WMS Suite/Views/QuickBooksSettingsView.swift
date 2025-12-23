@@ -1,224 +1,410 @@
 //
-//  QuickBooksSettingsView.swift (UPDATED)
+//  QuickBooksSettingsView.swift
 //  WMS Suite
 //
-//  Updated to include Client ID/Secret for auto token refresh
+//  COMPLETELY REWRITTEN: OAuth-first design with modern UX
 //
 
 import SwiftUI
 
 struct QuickBooksSettingsView: View {
-    @AppStorage("quickbooksCompanyId") private var companyId = ""
-    @AppStorage("quickbooksAccessToken") private var accessToken = ""
-    @AppStorage("quickbooksRefreshToken") private var refreshToken = ""
-    @AppStorage("quickbooksClientId") private var clientId = ""
-    @AppStorage("quickbooksClientSecret") private var clientSecret = ""
+    @StateObject private var tokenManager = QuickBooksTokenManager.shared
     
-    @AppStorage("quickbooksIncomeAccountId") private var incomeAccountId = ""
-    @AppStorage("quickbooksCOGSAccountId") private var cogsAccountId = ""
-    @AppStorage("quickbooksAssetAccountId") private var assetAccountId = ""
+    // Only these two fields are user-editable
+    @State private var clientId = UserDefaults.standard.string(forKey: "quickbooksClientId") ?? ""
+    @State private var clientSecret = UserDefaults.standard.string(forKey: "quickbooksClientSecret") ?? ""
     
-    @State private var showingAccountSetup = false
-    @State private var connectionStatus: String?
-    @State private var isTestingConnection = false
-    @State private var showingInstructions = false
+    // UI State
+    @State private var showingCredentialsInput = false
+    @State private var isConnecting = false
+    @State private var errorMessage: String?
+    @State private var showingHelp = false
     
     var body: some View {
         Form {
-            Section {
-                TextField("Company ID (Realm ID)", text: $companyId)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                
-                SecureField("Access Token", text: $accessToken)
-                    .textContentType(.password)
-                
-                SecureField("Refresh Token", text: $refreshToken)
-                    .textContentType(.password)
-            } header: {
-                Text("OAuth Credentials")
-            } footer: {
-                Text("Access tokens expire hourly but will refresh automatically if you provide Client ID and Secret below.")
-            }
+            // SECTION 1: Connection Status (Always Visible)
+            connectionStatusSection
             
-            Section {
-                TextField("Client ID", text: $clientId)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                
-                SecureField("Client Secret", text: $clientSecret)
-                    .textContentType(.password)
-            } header: {
-                Text("App Credentials (For Auto Token Refresh)")
-            } footer: {
-                Text("Optional: Get these from your Intuit Developer app. When provided, access tokens will refresh automatically.")
-            }
+            // SECTION 2: Quick Actions
+            quickActionsSection
             
-            Section {
-                if connectionStatus != nil {
-                    Label(connectionStatus!, systemImage: connectionStatus!.contains("✅") ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .foregroundColor(connectionStatus!.contains("✅") ? .green : .red)
-                }
+            // SECTION 3: OAuth Configuration (Collapsible)
+            oauthConfigurationSection
+            
+            // SECTION 4: Environment Toggle
+            environmentSection
+            
+            // SECTION 5: Help & Instructions
+            helpSection
+        }
+        .navigationTitle("QuickBooks")
+        .navigationBarTitleDisplayMode(.large)
+        .alert("Error", isPresented: .constant(errorMessage != nil)) {
+            Button("OK") { errorMessage = nil }
+        } message: {
+            if let error = errorMessage {
+                Text(error)
+            }
+        }
+        .sheet(isPresented: $showingHelp) {
+            NavigationView {
+                QuickBooksHelpView()
+            }
+        }
+    }
+    
+    // MARK: - Connection Status Section
+    
+    private var connectionStatusSection: some View {
+        Section {
+            HStack(spacing: 16) {
+                // Status Icon
+                Image(systemName: tokenManager.isAuthenticated ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(tokenManager.isAuthenticated ? .green : .secondary)
                 
-                Button(action: testConnection) {
-                    if isTestingConnection {
-                        HStack {
-                            ProgressView()
-                            Text("Testing...")
-                        }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(tokenManager.isAuthenticated ? "Connected" : "Not Connected")
+                        .font(.headline)
+                    
+                    if let companyId = tokenManager.getCompanyId() {
+                        Text("Company ID: \(companyId)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     } else {
-                        Label("Test Connection", systemImage: "network")
+                        Text("Connect to QuickBooks to get started")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .disabled(companyId.isEmpty || accessToken.isEmpty || isTestingConnection)
                 
-                Button(action: { showingAccountSetup = true }) {
-                    Label("Configure Accounts", systemImage: "list.bullet.rectangle")
+                Spacer()
+            }
+            .padding(.vertical, 8)
+        }
+    }
+    
+    // MARK: - Quick Actions Section
+    
+    private var quickActionsSection: some View {
+        Section {
+            if tokenManager.isAuthenticated {
+                // Disconnect Button
+                Button(role: .destructive, action: disconnect) {
+                    Label("Disconnect QuickBooks", systemImage: "power")
                 }
-                .disabled(companyId.isEmpty || accessToken.isEmpty)
-            } header: {
-                Text("Connection")
+            } else {
+                // Connect Button
+                Button(action: connect) {
+                    HStack {
+                        if isConnecting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "link.circle.fill")
+                        }
+                        Text(isConnecting ? "Connecting..." : "Connect to QuickBooks")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(clientId.isEmpty || clientSecret.isEmpty || isConnecting)
+                .listRowBackground(Color.accentColor.opacity(0.1))
+                
+                if clientId.isEmpty || clientSecret.isEmpty {
+                    Text("⚠️ Enter OAuth credentials below to connect")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
+            }
+        }
+    }
+    
+    // MARK: - OAuth Configuration Section
+    
+    private var oauthConfigurationSection: some View {
+        Section {
+            DisclosureGroup("OAuth Credentials", isExpanded: $showingCredentialsInput) {
+                VStack(alignment: .leading, spacing: 16) {
+                    // Client ID
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Client ID")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        TextField("Enter from Developer Portal", text: $clientId)
+                            .textFieldStyle(.roundedBorder)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+                    
+                    // Client Secret
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Client Secret")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        SecureField("Enter from Developer Portal", text: $clientSecret)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    
+                    // Save Button
+                    Button(action: saveCredentials) {
+                        Text("Save Credentials")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(clientId.isEmpty || clientSecret.isEmpty)
+                }
+                .padding(.vertical, 8)
+            }
+        } header: {
+            Text("Configuration")
+        } footer: {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Get your OAuth credentials from the QuickBooks Developer Portal:")
+                
+                Link("Open Developer Portal →", destination: URL(string: "https://developer.intuit.com/app/developer/myapps")!)
+                    .font(.caption)
+                    .bold()
+            }
+        }
+    }
+    
+    // MARK: - Environment Section
+    
+    private var environmentSection: some View {
+        Section {
+            Toggle(isOn: $tokenManager.useSandbox) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Sandbox Mode")
+                        .font(.body)
+                    Text("Use test environment for development")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        } header: {
+            Text("Environment")
+        } footer: {
+            Text("Enable Sandbox to test with fake data. Disable for production use with real QuickBooks company.")
+        }
+    }
+    
+    // MARK: - Help Section
+    
+    private var helpSection: some View {
+        Section {
+            Button(action: { showingHelp = true }) {
+                HStack {
+                    Image(systemName: "book.fill")
+                        .foregroundColor(.blue)
+                    Text("Setup Instructions")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
+            Link(destination: URL(string: "https://developer.intuit.com/app/developer/myapps")!) {
+                HStack {
+                    Image(systemName: "arrow.up.right.square")
+                        .foregroundColor(.blue)
+                    Text("QuickBooks Developer Portal")
+                }
+            }
+            
+            Link(destination: URL(string: "https://developer.intuit.com/app/developer/qbo/docs/get-started")!) {
+                HStack {
+                    Image(systemName: "doc.text")
+                        .foregroundColor(.blue)
+                    Text("API Documentation")
+                }
+            }
+        } header: {
+            Text("Help & Resources")
+        }
+    }
+    
+    // MARK: - Actions
+    
+    private func saveCredentials() {
+        tokenManager.setCredentials(clientId: clientId, clientSecret: clientSecret)
+        errorMessage = nil
+        
+        // Show success feedback
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+    }
+    
+    private func connect() {
+        guard !clientId.isEmpty, !clientSecret.isEmpty else {
+            errorMessage = "Please enter Client ID and Secret first"
+            return
+        }
+        
+        // Save credentials first
+        saveCredentials()
+        
+        isConnecting = true
+        errorMessage = nil
+        
+        // Get root view controller
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            errorMessage = "Unable to present login"
+            isConnecting = false
+            return
+        }
+        
+        // Start OAuth flow
+        tokenManager.startOAuthFlow(presentingViewController: rootViewController)
+        
+        // Reset connecting state
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            isConnecting = false
+        }
+    }
+    
+    private func disconnect() {
+        tokenManager.logout()
+        errorMessage = nil
+        
+        // Haptic feedback
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
+    }
+}
+
+// MARK: - Help View
+
+struct QuickBooksHelpView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        List {
             Section {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Setup Instructions")
-                        .font(.headline)
+                    Text("🎯 Quick Start")
+                        .font(.title2)
+                        .bold()
                     
-                    SetupStep(number: 1, text: "Go to developer.intuit.com")
-                    SetupStep(number: 2, text: "Create an app (or use existing)")
-                    SetupStep(number: 3, text: "Copy Client ID and Client Secret from 'Keys & Credentials' (optional, for auto-refresh)")
-                    SetupStep(number: 4, text: "Use OAuth Playground to get tokens")
-                    SetupStep(number: 5, text: "Select scope: 'com.intuit.quickbooks.accounting'")
-                    SetupStep(number: 6, text: "Enter Company ID, Access Token, and Refresh Token above")
-                    SetupStep(number: 7, text: "Optionally enter Client ID/Secret for automatic token refresh")
-                    SetupStep(number: 8, text: "Tap 'Configure Accounts' to set up income, COGS, and asset accounts")
-                    
-                    Link(destination: URL(string: "https://developer.intuit.com")!) {
-                        HStack {
-                            Text("Open Developer Portal")
-                            Image(systemName: "arrow.up.right.square")
-                        }
-                        .font(.subheadline)
-                    }
-                    .padding(.top, 8)
-                    
-                    Button(action: { showingInstructions = true }) {
-                        HStack {
-                            Text("View Detailed Guide")
-                            Image(systemName: "book")
-                        }
-                        .font(.subheadline)
-                    }
-                    .padding(.top, 4)
+                    Text("Follow these steps to connect QuickBooks:")
+                        .foregroundColor(.secondary)
                 }
-            } header: {
-                Text("How to Get Credentials")
+                .padding(.vertical, 8)
             }
-        }
-        .navigationTitle("QuickBooks Online")
-        .sheet(isPresented: $showingAccountSetup) {
-            AccountSetupView(
-                companyId: companyId,
-                accessToken: accessToken
-            )
-        }
-        .sheet(isPresented: $showingInstructions) {
-            NavigationView {
-                QuickBooksInstructionsView()
-            }
-        }
-    }
-    
-    private func testConnection() {
-        isTestingConnection = true
-        connectionStatus = nil
-        
-        Task {
-            do {
-                let service = QuickBooksService(
-                    companyId: companyId,
-                    accessToken: accessToken,
-                    refreshToken: refreshToken
+            
+            Section("Step 1: Create Developer App") {
+                InstructionStep(
+                    number: 1,
+                    title: "Go to Developer Portal",
+                    detail: "Visit developer.intuit.com and sign in"
                 )
-                
-                // Try to fetch accounts as a connection test
-                _ = try await service.fetchAccounts()
-                
-                await MainActor.run {
-                    connectionStatus = "✅ Connected successfully"
-                    isTestingConnection = false
-                }
-            } catch {
-                await MainActor.run {
-                    connectionStatus = "❌ Connection failed: \(error.localizedDescription)"
-                    isTestingConnection = false
-                }
+                InstructionStep(
+                    number: 2,
+                    title: "Create an App",
+                    detail: "Click 'My Apps' → 'Create an app' → Select 'QuickBooks Online'"
+                )
+                InstructionStep(
+                    number: 3,
+                    title: "Configure App",
+                    detail: "Name: WMS Suite\nScopes: Accounting"
+                )
+            }
+            
+            Section("Step 2: Get Credentials") {
+                InstructionStep(
+                    number: 4,
+                    title: "Open Keys & Credentials",
+                    detail: "In your app, go to 'Keys & credentials' tab"
+                )
+                InstructionStep(
+                    number: 5,
+                    title: "Copy Client ID",
+                    detail: "Copy your Development Client ID"
+                )
+                InstructionStep(
+                    number: 6,
+                    title: "Copy Client Secret",
+                    detail: "Click 'Show' and copy your Client Secret"
+                )
+                InstructionStep(
+                    number: 7,
+                    title: "Add Redirect URI",
+                    detail: "Add: wmssuite://oauth-callback\nThen click Save"
+                )
+            }
+            
+            Section("Step 3: Connect in App") {
+                InstructionStep(
+                    number: 8,
+                    title: "Paste Credentials",
+                    detail: "Enter Client ID and Secret in the app"
+                )
+                InstructionStep(
+                    number: 9,
+                    title: "Click 'Connect to QuickBooks'",
+                    detail: "Browser will open for you to login"
+                )
+                InstructionStep(
+                    number: 10,
+                    title: "Authorize",
+                    detail: "Login to QuickBooks and authorize the app"
+                )
+            }
+            
+            Section("Important Notes") {
+                Label("Use Sandbox mode for testing", systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                Label("Switch to Production when ready to go live", systemImage: "checkmark.circle")
+                    .font(.caption)
+                Label("Tokens refresh automatically - no manual intervention needed", systemImage: "arrow.clockwise")
+                    .font(.caption)
             }
         }
-    }
-}
-
-struct SetupStep: View {
-    let number: Int
-    let text: String
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Text("\(number).")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .frame(width: 20, alignment: .leading)
-            Text(text)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-    }
-}
-
-struct QuickBooksInstructionsView: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("QuickBooks Online Setup Guide")
-                    .font(.title)
-                    .bold()
-                
-                Group {
-                    Text("Step 1: Create Developer App")
-                        .font(.headline)
-                    Text("1. Go to developer.intuit.com\n2. Sign in with your Intuit account\n3. Click 'My Apps' → 'Create an app'\n4. Choose 'QuickBooks Online and Payments'\n5. Name your app (e.g., 'WMS Suite')")
-                    
-                    Text("Step 2: Get Client Credentials (Optional)")
-                        .font(.headline)
-                    Text("1. In your app dashboard, go to 'Keys & OAuth'\n2. Copy your Client ID\n3. Copy your Client Secret\n4. These enable automatic token refresh (recommended)")
-                    
-                    Text("Step 3: Get OAuth Tokens")
-                        .font(.headline)
-                    Text("1. Go to developer.intuit.com/app/developer/playground\n2. Select your app\n3. Select scopes: 'Accounting'\n4. Click 'Get authorization code'\n5. Log in to QuickBooks and authorize\n6. Copy the Realm ID (Company ID)\n7. Copy the Access Token\n8. Copy the Refresh Token")
-                    
-                    Text("Step 4: Configure in WMS Suite")
-                        .font(.headline)
-                    Text("1. Enter all credentials in Settings\n2. Tap 'Test Connection'\n3. Tap 'Configure Accounts'\n4. Select your Income, COGS, and Asset accounts\n5. Done!")
-                    
-                    Text("Token Expiration")
-                        .font(.headline)
-                    Text("• Access tokens expire after 1 hour\n• If you provided Client ID/Secret: Tokens refresh automatically ✅\n• If not: You'll need to manually refresh tokens from OAuth Playground")
-                }
-                .font(.subheadline)
-            }
-            .padding()
-        }
-        .navigationTitle("Instructions")
+        .navigationTitle("Setup Guide")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Done") {
-                    dismiss()
-                }
+                Button("Done") { dismiss() }
             }
         }
+    }
+}
+
+struct InstructionStep: View {
+    let number: Int
+    let title: String
+    let detail: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .frame(width: 24, height: 24)
+                .background(Color.accentColor)
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text(detail)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    NavigationView {
+        QuickBooksSettingsView()
     }
 }
