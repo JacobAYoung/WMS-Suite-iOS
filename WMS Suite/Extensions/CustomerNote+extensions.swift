@@ -26,17 +26,19 @@ extension CustomerNote {
     
     /// Get formatted date string
     var formattedDate: String {
+        guard let date = createdDate else { return "Unknown date" }
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter.string(from: createdDate)
+        return formatter.string(from: date)
     }
     
     /// Get relative time string (e.g., "2 hours ago")
     var relativeTimeString: String {
+        guard let date = createdDate else { return "Unknown time" }
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
-        return formatter.localizedString(for: createdDate, relativeTo: Date())
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
     
     /// Get display user name (or "You" if no userName)
