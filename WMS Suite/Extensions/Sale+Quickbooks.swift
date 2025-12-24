@@ -1,8 +1,9 @@
 //
-//  Sale+QuickBooks.swift
+//  Sale+QuickBooks.swift (CORRECTED)
 //  WMS Suite
 //
 //  QuickBooks invoice-specific extensions for Sale
+//  FIXED: NSDecimalNumber comparison errors
 //
 
 import Foundation
@@ -189,14 +190,16 @@ extension Sale {
         self.lastSyncedQuickbooksDate = Date()
     }
     
-    /// Mark invoice as paid
+    /// Mark invoice as paid (FIXED: NSDecimalNumber comparison)
     func markAsPaid(amount: NSDecimalNumber? = nil) {
         let paymentAmount = amount ?? (totalAmount ?? NSDecimalNumber.zero)
         self.amountPaid = paymentAmount
         self.paymentStatus = PaymentStatus.paid.rawValue
         
-        // Remove priority flags when paid
-        if paymentAmount >= (totalAmount ?? NSDecimalNumber.zero) {
+        // Remove priority flags when fully paid
+        // FIXED: Use NSDecimalNumber.compare() instead of >=
+        let total = totalAmount ?? NSDecimalNumber.zero
+        if paymentAmount.compare(total) != .orderedAscending {  // paymentAmount >= total
             self.isPriority = false
             self.needsAttention = false
         }

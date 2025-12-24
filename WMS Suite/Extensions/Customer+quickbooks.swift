@@ -1,8 +1,9 @@
 //
-//  Customer+QuickBooks.swift
+//  Customer+QuickBooks.swift (FULLY CORRECTED)
 //  WMS Suite
 //
 //  QuickBooks-specific extensions for Customer
+//  FIXED: Optional Date comparison in customerNotesArray
 //
 
 import Foundation
@@ -60,9 +61,12 @@ extension Customer {
     // MARK: - Customer Notes
     
     /// Get customer notes array sorted by date
+    /// FIXED: Handle optional createdDate properly
     var customerNotesArray: [CustomerNote] {
         guard let notesSet = customerNotes as? Set<CustomerNote> else { return [] }
-        return Array(notesSet).sorted { $0.createdDate > $1.createdDate }
+        return Array(notesSet).sorted {
+            ($0.createdDate ?? Date.distantPast) > ($1.createdDate ?? Date.distantPast)
+        }
     }
     
     /// Get notes by type
