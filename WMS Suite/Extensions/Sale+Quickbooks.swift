@@ -1,9 +1,8 @@
 //
-//  Sale+QuickBooks.swift (CORRECTED)
+//  Sale+QuickBooks.swift
 //  WMS Suite
 //
-//  QuickBooks invoice-specific extensions for Sale
-//  FIXED: NSDecimalNumber comparison errors
+//  QuickBooks invoice-specific extensions for Sale (COMPLETE VERSION)
 //
 
 import Foundation
@@ -112,6 +111,45 @@ extension Sale {
         return min(paid / total, 1.0)
     }
     
+    // MARK: - Invoice-Specific Display Properties (NEW FIELDS)
+    
+    /// Formatted subtotal
+    var formattedSubtotal: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        return formatter.string(from: subtotal ?? NSDecimalNumber.zero) ?? "$0.00"
+    }
+    
+    /// Formatted tax amount
+    var formattedTaxAmount: String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        return formatter.string(from: taxAmount ?? NSDecimalNumber.zero) ?? "$0.00"
+    }
+    
+    /// Tax rate percentage
+    var taxRate: Double {
+        let sub = subtotal?.doubleValue ?? 0
+        let tax = taxAmount?.doubleValue ?? 0
+        guard sub > 0 else { return 0 }
+        return (tax / sub) * 100
+    }
+    
+    /// Formatted tax rate
+    var formattedTaxRate: String {
+        return String(format: "%.2f%%", taxRate)
+    }
+    
+    /// Payment terms display
+    var displayTerms: String {
+        return invoiceTerms ?? "Due on receipt"
+    }
+    
+    /// Has internal memo
+    var hasMemo: Bool {
+        return invoiceMemo != nil && !(invoiceMemo?.isEmpty ?? true)
+    }
+    
     // MARK: - Invoice Display Helpers
     
     /// Get invoice number (use orderNumber for QuickBooks invoices)
@@ -155,22 +193,38 @@ extension Sale {
     
     // MARK: - QuickBooks Sync Helpers
     
-    /// Update from QuickBooks invoice data
+    /// Update from QuickBooks invoice data (COMPLETE VERSION WITH NEW FIELDS)
     func updateFromQuickBooksInvoice(
         qbInvoiceId: String,
-        orderNumber: String,
+        invoiceNumber: String,
         date: Date,
+        subtotal: NSDecimalNumber,
+        taxAmount: NSDecimalNumber,
         totalAmount: NSDecimalNumber,
         amountPaid: NSDecimalNumber,
         dueDate: Date?,
-        customerId: String?
+        terms: String?,
+        memo: String?,
+        syncToken: String?
     ) {
+        // IDs and dates
         self.quickbooksInvoiceId = qbInvoiceId
-        self.orderNumber = orderNumber
+        self.orderNumber = invoiceNumber
         self.saleDate = date
+        self.paymentDueDate = dueDate
+        
+        // Amounts
+        self.subtotal = subtotal
+        self.taxAmount = taxAmount
         self.totalAmount = totalAmount
         self.amountPaid = amountPaid
-        self.paymentDueDate = dueDate
+        
+        // Invoice details
+        self.invoiceTerms = terms
+        self.invoiceMemo = memo
+        self.quickbooksSyncToken = syncToken
+        
+        // Set source
         self.source = "quickbooks"
         
         // Update payment status
@@ -190,16 +244,14 @@ extension Sale {
         self.lastSyncedQuickbooksDate = Date()
     }
     
-    /// Mark invoice as paid (FIXED: NSDecimalNumber comparison)
+    /// Mark invoice as paid
     func markAsPaid(amount: NSDecimalNumber? = nil) {
         let paymentAmount = amount ?? (totalAmount ?? NSDecimalNumber.zero)
         self.amountPaid = paymentAmount
         self.paymentStatus = PaymentStatus.paid.rawValue
         
-        // Remove priority flags when fully paid
-        // FIXED: Use NSDecimalNumber.compare() instead of >=
         let total = totalAmount ?? NSDecimalNumber.zero
-        if paymentAmount.compare(total) != .orderedAscending {  // paymentAmount >= total
+        if paymentAmount.compare(total) != .orderedAscending {
             self.isPriority = false
             self.needsAttention = false
         }
@@ -211,7 +263,6 @@ extension Sale {
         let newTotal = currentPaid.adding(amount)
         self.amountPaid = newTotal
         
-        // Update status
         let status = PaymentStatus.determine(
             totalAmount: totalAmount ?? NSDecimalNumber.zero,
             amountPaid: newTotal,
@@ -223,6 +274,46 @@ extension Sale {
     /// Check if sync is stale (> 24 hours)
     var needsQuickBooksSync: Bool {
         guard let lastSync = lastSyncedQuickbooksDate else { return true }
-        return Date().timeIntervalSince(lastSync) > 86400 // 24 hours
+        return Date().timeIntervalSince(lastSync) > 86400
+    }
+    
+    // MARK: - Invoice Queries
+    
+    /// Fetch all QuickBooks invoices
+    static func fetchQuickBooksInvoices(context: NSManagedObjectContext) -> [Sale] {
+        let request = NSFetchRequest<Sale>(entityName: "Sale")
+        request.predicate = NSPredicate(format: "source == %@", "quickbooks")
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Sale.saleDate, ascending: false)]
+        return (try? context.fetch(request)) ?? []
+    }
+    
+    /// Fetch unpaid invoices
+    static func fetchUnpaidInvoices(context: NSManagedObjectContext) -> [Sale] {
+        let request = NSFetchRequest<Sale>(entityName: "Sale")
+        request.predicate = NSPredicate(
+            format: "source == %@ AND (paymentStatus == %@ OR paymentStatus == %@)",
+            "quickbooks", "unpaid", "partial"
+        )
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Sale.paymentDueDate, ascending: true)]
+        return (try? context.fetch(request)) ?? []
+    }
+    
+    /// Fetch overdue invoices
+    static func fetchOverdueInvoices(context: NSManagedObjectContext) -> [Sale] {
+        let request = NSFetchRequest<Sale>(entityName: "Sale")
+        request.predicate = NSPredicate(
+            format: "source == %@ AND paymentStatus == %@",
+            "quickbooks", "overdue"
+        )
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Sale.paymentDueDate, ascending: true)]
+        return (try? context.fetch(request)) ?? []
+    }
+    
+    /// Fetch invoice by QuickBooks ID
+    static func fetchByQuickBooksId(_ qbId: String, context: NSManagedObjectContext) -> Sale? {
+        let request = NSFetchRequest<Sale>(entityName: "Sale")
+        request.predicate = NSPredicate(format: "quickbooksInvoiceId == %@", qbId)
+        request.fetchLimit = 1
+        return (try? context.fetch(request))?.first
     }
 }
