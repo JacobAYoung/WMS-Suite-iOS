@@ -2,7 +2,7 @@
 //  CustomerDetailView.swift
 //  WMS Suite
 //
-//  Detailed view of customer with contact info and jobs
+//  Enhanced detailed view with QuickBooks integration sections
 //
 
 import SwiftUI
@@ -14,23 +14,34 @@ struct CustomerDetailView: View {
     
     @State private var showingEditCustomer = false
     @State private var showingAddJob = false
+    @State private var showingAllInvoices = false
     @State private var refreshID = UUID()
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Contact Info Card
+                // Contact Info Card (EXISTING)
                 contactInfoSection
                 
-                // Customer Notes (if any)
+                // ✨ NEW: QuickBooks Account Summary
+                if customer.quickbooksCustomerId != nil {
+                    quickbooksAccountSummarySection
+                }
+                
+                // Customer Notes (EXISTING - if any)
                 if let notes = customer.notes, !notes.isEmpty {
                     customerNotesSection(notes: notes)
                 }
                 
-                // Quick Actions
+                // Quick Actions (EXISTING)
                 quickActionsSection
                 
-                // Jobs Section
+                // ✨ NEW: Invoices Section (if QB customer)
+                if customer.quickbooksCustomerId != nil {
+                    invoicesSection
+                }
+                
+                // Jobs Section (EXISTING)
                 jobsSection
             }
             .padding()
@@ -53,6 +64,12 @@ struct CustomerDetailView: View {
             AddJobView(customer: customer)
                 .environment(\.managedObjectContext, viewContext)
         }
+        .sheet(isPresented: $showingAllInvoices) {
+            NavigationView {
+                InvoicesListView(customer: customer)
+                    .environment(\.managedObjectContext, viewContext)
+            }
+        }
         .onChange(of: showingAddJob) { isShowing in
             if !isShowing {
                 refreshID = UUID()
@@ -65,7 +82,7 @@ struct CustomerDetailView: View {
         }
     }
     
-    // MARK: - Contact Info Section
+    // MARK: - Contact Info Section (EXISTING)
     
     private var contactInfoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -130,7 +147,154 @@ struct CustomerDetailView: View {
         .cornerRadius(12)
     }
     
-    // MARK: - Customer Notes Section
+    // MARK: - ✨ NEW: QuickBooks Account Summary Section
+    
+    private var quickbooksAccountSummarySection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .foregroundColor(.green)
+                Text("QuickBooks Account")
+                    .font(.headline)
+                
+                Spacer()
+                
+                // Sync status badge
+                if let lastSynced = customer.lastSyncedQuickbooksDate {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                        Text("Synced \(lastSynced.timeAgoDisplay)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            
+            // Account Balance
+            VStack(spacing: 12) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Account Balance")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        // TODO: Wire up actual balance from customer.balance
+                        Text("$0.00")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("Outstanding")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        // TODO: Calculate from unpaid invoices
+                        Text("0 invoices")
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                    }
+                }
+                
+                Divider()
+                
+                // Quick Stats
+                HStack(spacing: 20) {
+                    AccountStatBadge(
+                        icon: "doc.text.fill",
+                        label: "Total Invoices",
+                        value: "0", // TODO: Count invoices
+                        color: .blue
+                    )
+                    
+                    AccountStatBadge(
+                        icon: "dollarsign.circle.fill",
+                        label: "Last Payment",
+                        value: "Never", // TODO: Last payment date
+                        color: .green
+                    )
+                }
+            }
+        }
+        .padding()
+        .background(Color(uiColor: .secondarySystemBackground))
+        .cornerRadius(12)
+    }
+    
+    // MARK: - ✨ NEW: Invoices Section
+    
+    private var invoicesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "doc.text.fill")
+                    .foregroundColor(.blue)
+                Text("Invoices")
+                    .font(.headline)
+                
+                Spacer()
+                
+                Button(action: { showingAllInvoices = true }) {
+                    HStack(spacing: 4) {
+                        Text("View All")
+                        Image(systemName: "chevron.right")
+                    }
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+                }
+            }
+            
+            // TODO: Replace with actual invoice data
+            // For now, show empty state or skeleton
+            if true { // Will be: customer.invoices.isEmpty
+                emptyInvoicesState
+            } else {
+                // Recent invoices list (will be implemented after Invoice entity)
+                recentInvoicesList
+            }
+        }
+        .padding()
+        .background(Color(uiColor: .secondarySystemBackground))
+        .cornerRadius(12)
+    }
+    
+    private var emptyInvoicesState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "doc.text.badge.plus")
+                .font(.system(size: 40))
+                .foregroundColor(.gray)
+            
+            Text("No Invoices")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Text("Invoices will appear here after syncing from QuickBooks")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+    }
+    
+    private var recentInvoicesList: some View {
+        VStack(spacing: 8) {
+            // TODO: Loop through customer.recentInvoices (last 3)
+            ForEach(0..<3, id: \.self) { index in
+                InvoiceRowSkeleton()
+            }
+            
+            Text("Showing 3 most recent invoices")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    // MARK: - Customer Notes Section (EXISTING)
     
     private func customerNotesSection(notes: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -147,7 +311,7 @@ struct CustomerDetailView: View {
         .cornerRadius(12)
     }
     
-    // MARK: - Quick Actions
+    // MARK: - Quick Actions (EXISTING)
     
     private var quickActionsSection: some View {
         VStack(spacing: 12) {
@@ -180,7 +344,7 @@ struct CustomerDetailView: View {
         .cornerRadius(12)
     }
     
-    // MARK: - Jobs Section
+    // MARK: - Jobs Section (EXISTING)
     
     private var jobsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -257,7 +421,70 @@ struct CustomerDetailView: View {
     }
 }
 
-// MARK: - Quick Action Button
+// MARK: - ✨ NEW: Account Stat Badge Component
+
+struct AccountStatBadge: View {
+    let icon: String
+    let label: String
+    let value: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(value)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+// MARK: - ✨ NEW: Invoice Row Skeleton (temporary)
+
+struct InvoiceRowSkeleton: View {
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("INV-XXXX")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                
+                Text("Date placeholder")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text("$XXX.XX")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                
+                Text("Status")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(4)
+            }
+        }
+        .padding()
+        .background(Color(uiColor: .tertiarySystemBackground))
+        .cornerRadius(10)
+    }
+}
+
+// MARK: - Quick Action Button (EXISTING)
 
 struct QuickActionButton: View {
     let icon: String
@@ -281,7 +508,7 @@ struct QuickActionButton: View {
     }
 }
 
-// MARK: - Job Row Compact
+// MARK: - Job Row Compact (EXISTING)
 
 struct JobRowCompact: View {
     let job: Job
@@ -332,6 +559,12 @@ struct JobRowCompact: View {
     }
 }
 
-// MARK: - Info Row
+// MARK: - ✨ Helper Extension for Time Ago Display
 
-// Note: Using inline HStacks instead of separate component for simplicity
+extension Date {
+    var timeAgoDisplay: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: self, relativeTo: Date())
+    }
+}
