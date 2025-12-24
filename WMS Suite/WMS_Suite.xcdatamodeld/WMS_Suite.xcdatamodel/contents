@@ -7,14 +7,30 @@
     </entity>
     <entity name="Customer" representedClassName="Customer" syncable="YES" codeGenerationType="class">
         <attribute name="address" optional="YES" attributeType="String"/>
+        <attribute name="balance" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="billingAddress" optional="YES" attributeType="String"/>
+        <attribute name="companyName" optional="YES" attributeType="String"/>
         <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="email" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastContactDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastSyncedQuickbooksDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
         <attribute name="notes" optional="YES" attributeType="String"/>
         <attribute name="phone" optional="YES" attributeType="String"/>
+        <attribute name="quickbooksCustomerId" optional="YES" attributeType="String"/>
+        <attribute name="shippingAddress" optional="YES" attributeType="String"/>
+        <relationship name="customerNotes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CustomerNote" inverseName="customer" inverseEntity="CustomerNote"/>
         <relationship name="jobs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Job" inverseName="customer" inverseEntity="Job"/>
+        <relationship name="sales" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Sale" inverseName="customer" inverseEntity="Sale"/>
+    </entity>
+    <entity name="CustomerNote" representedClassName="CustomerNote" syncable="YES" codeGenerationType="class">
+        <attribute name="createdDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="noteText" attributeType="String"/>
+        <attribute name="noteType" optional="YES" attributeType="String"/>
+        <attribute name="userName" optional="YES" attributeType="String"/>
+        <relationship name="customer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Customer" inverseName="customerNotes" inverseEntity="Customer"/>
     </entity>
     <entity name="InventoryItem" representedClassName="InventoryItem" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
@@ -73,19 +89,25 @@
         <relationship name="sale" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Sale" inverseName="notes" inverseEntity="Sale"/>
     </entity>
     <entity name="Sale" representedClassName="Sale" syncable="YES" codeGenerationType="class">
+        <attribute name="amountPaid" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="carrier" optional="YES" attributeType="String"/>
         <attribute name="deliveredDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="fulfillmentStatus" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isPriority" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="lastSyncedQuickbooksDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastTrackingUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="needsAttention" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="orderNumber" optional="YES" attributeType="String"/>
+        <attribute name="paymentDueDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="paymentStatus" optional="YES" attributeType="String"/>
+        <attribute name="quickbooksInvoiceId" optional="YES" attributeType="String"/>
         <attribute name="saleDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="shippedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="source" optional="YES" attributeType="String"/>
         <attribute name="totalAmount" optional="YES" attributeType="Decimal" defaultValueString="0"/>
         <attribute name="trackingNumber" optional="YES" attributeType="String"/>
+        <relationship name="customer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Customer" inverseName="sales" inverseEntity="Customer"/>
         <relationship name="lineItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="SaleLineItem" inverseName="sale" inverseEntity="SaleLineItem"/>
         <relationship name="notes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="OrderNote" inverseName="sale" inverseEntity="OrderNote"/>
     </entity>
