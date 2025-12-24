@@ -13,6 +13,9 @@
 		C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */; };
 		C856DA792EFB303800A14F89 /* ShopifyOAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */; };
 		C856DA7B2EFB304B00A14F89 /* ShopifyOAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */; };
+		C87700A72EFB965900E5E58A /* Customer+quickbooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700A62EFB964D00E5E58A /* Customer+quickbooks.swift */; };
+		C87700A92EFB968400E5E58A /* Sale+Quickbooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700A82EFB968000E5E58A /* Sale+Quickbooks.swift */; };
+		C87700AB2EFB969C00E5E58A /* CustomerNote+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700AA2EFB969500E5E58A /* CustomerNote+extensions.swift */; };
 		C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48262EEE288C0088DD7D /* AddSalesView.swift */; };
 		C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */; };
 		C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */; };
@@ -92,6 +95,9 @@
 		C82258792EE9057E0028BF7B /* WMS_Suite.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = WMS_Suite.xcdatamodel; sourceTree = "<group>"; };
 		C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyOAuthManager.swift; sourceTree = "<group>"; };
 		C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopifyOAuthView.swift; sourceTree = "<group>"; };
+		C87700A62EFB964D00E5E58A /* Customer+quickbooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Customer+quickbooks.swift"; sourceTree = "<group>"; };
+		C87700A82EFB968000E5E58A /* Sale+Quickbooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sale+Quickbooks.swift"; sourceTree = "<group>"; };
+		C87700AA2EFB969500E5E58A /* CustomerNote+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerNote+extensions.swift"; sourceTree = "<group>"; };
 		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8AC48262EEE288C0088DD7D /* AddSalesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSalesView.swift; sourceTree = "<group>"; };
 		C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryView.swift; sourceTree = "<group>"; };
@@ -333,6 +339,9 @@
 		C8CB34F82EEF6B3100C61FCE /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				C87700AA2EFB969500E5E58A /* CustomerNote+extensions.swift */,
+				C87700A82EFB968000E5E58A /* Sale+Quickbooks.swift */,
+				C87700A62EFB964D00E5E58A /* Customer+quickbooks.swift */,
 				C8CB35432EF7469C00C61FCE /* Job+Extensions.swift */,
 				C8CB35412EF7467100C61FCE /* Customer+extensions.swift */,
 				C8CB35232EF5FAD800C61FCE /* Sale+fulfillmentextensions.swift */,
@@ -452,6 +461,7 @@
 				C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */,
 				C8FBB5282EEE0DC4001FC318 /* AddItemView.swift in Sources */,
 				C8CB354E2EF74AEF00C61FCE /* JobDetailView.swift in Sources */,
+				C87700AB2EFB969C00E5E58A /* CustomerNote+extensions.swift in Sources */,
 				C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */,
 				C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */,
 				C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */,
@@ -476,6 +486,7 @@
 				C8CB34ED2EEF446300C61FCE /* DataManagementView.swift in Sources */,
 				C8CB354A2EF74AD300C61FCE /* AddCustomerView.swift in Sources */,
 				C8CB35422EF7467C00C61FCE /* Customer+extensions.swift in Sources */,
+				C87700A72EFB965900E5E58A /* Customer+quickbooks.swift in Sources */,
 				C8CB34E32EEF246400C61FCE /* ShopifySettingsView.swift in Sources */,
 				C8CB35132EF4F66400C61FCE /* EmptyStateView.swift in Sources */,
 				C8CB35542EF74C1F00C61FCE /* CustomerDetailView.swift in Sources */,
@@ -485,6 +496,7 @@
 				C8FBB5142EEE0D4E001FC318 /* BarcodeServiceProtocol.swift in Sources */,
 				C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */,
 				C8CB35522EF74B0800C61FCE /* CalendarView.swift in Sources */,
+				C87700A92EFB968400E5E58A /* Sale+Quickbooks.swift in Sources */,
 				C8CB350B2EF4F43100C61FCE /* InventorySortFilter.swift in Sources */,
 				C856DA792EFB303800A14F89 /* ShopifyOAuthManager.swift in Sources */,
 				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
