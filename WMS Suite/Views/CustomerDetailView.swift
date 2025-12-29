@@ -2,7 +2,7 @@
 //  CustomerDetailView.swift
 //  WMS Suite
 //
-//  Enhanced detailed view with QuickBooks integration sections
+//  Enhanced with QuickBooks data integration (WIRED UP VERSION)
 //
 
 import SwiftUI
@@ -17,14 +17,22 @@ struct CustomerDetailView: View {
     @State private var showingAllInvoices = false
     @State private var refreshID = UUID()
     
+    // QuickBooks invoices for this customer
+    var quickbooksInvoices: [Sale] {
+        guard let salesSet = customer.sales as? Set<Sale> else { return [] }
+        return salesSet
+            .filter { $0.source == "quickbooks" }
+            .sorted { ($0.saleDate ?? Date.distantPast) > ($1.saleDate ?? Date.distantPast) }
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 // Contact Info Card (EXISTING)
                 contactInfoSection
                 
-                // ✨ NEW: QuickBooks Account Summary
-                if customer.quickbooksCustomerId != nil {
+                // ✨ QuickBooks Account Summary (only if synced)
+                if customer.isSyncedWithQuickBooks {
                     quickbooksAccountSummarySection
                 }
                 
@@ -36,8 +44,8 @@ struct CustomerDetailView: View {
                 // Quick Actions (EXISTING)
                 quickActionsSection
                 
-                // ✨ NEW: Invoices Section (if QB customer)
-                if customer.quickbooksCustomerId != nil {
+                // ✨ Invoices Section (only if QB customer)
+                if customer.isSyncedWithQuickBooks {
                     invoicesSection
                 }
                 
@@ -147,7 +155,7 @@ struct CustomerDetailView: View {
         .cornerRadius(12)
     }
     
-    // MARK: - ✨ NEW: QuickBooks Account Summary Section
+    // MARK: - ✨ QuickBooks Account Summary Section (WIRED UP)
     
     private var quickbooksAccountSummarySection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -180,8 +188,7 @@ struct CustomerDetailView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         
-                        // TODO: Wire up actual balance from customer.balance
-                        Text("$0.00")
+                        Text(customer.formattedBalance)
                             .font(.title2)
                             .fontWeight(.bold)
                             .foregroundColor(.primary)
@@ -194,10 +201,9 @@ struct CustomerDetailView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        // TODO: Calculate from unpaid invoices
-                        Text("0 invoices")
+                        Text("\(customer.unpaidInvoices.count) invoices")
                             .font(.subheadline)
-                            .foregroundColor(.orange)
+                            .foregroundColor(customer.unpaidInvoices.isEmpty ? .green : .orange)
                     }
                 }
                 
@@ -208,14 +214,14 @@ struct CustomerDetailView: View {
                     AccountStatBadge(
                         icon: "doc.text.fill",
                         label: "Total Invoices",
-                        value: "0", // TODO: Count invoices
+                        value: "\(quickbooksInvoices.count)",
                         color: .blue
                     )
                     
                     AccountStatBadge(
                         icon: "dollarsign.circle.fill",
-                        label: "Last Payment",
-                        value: "Never", // TODO: Last payment date
+                        label: "Total Purchases",
+                        value: customer.formattedTotalPurchases,
                         color: .green
                     )
                 }
@@ -226,7 +232,7 @@ struct CustomerDetailView: View {
         .cornerRadius(12)
     }
     
-    // MARK: - ✨ NEW: Invoices Section
+    // MARK: - ✨ Invoices Section (WIRED UP)
     
     private var invoicesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -238,23 +244,37 @@ struct CustomerDetailView: View {
                 
                 Spacer()
                 
-                Button(action: { showingAllInvoices = true }) {
-                    HStack(spacing: 4) {
-                        Text("View All")
-                        Image(systemName: "chevron.right")
+                if !quickbooksInvoices.isEmpty {
+                    Button(action: { showingAllInvoices = true }) {
+                        HStack(spacing: 4) {
+                            Text("View All")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.blue)
                 }
             }
             
-            // TODO: Replace with actual invoice data
-            // For now, show empty state or skeleton
-            if true { // Will be: customer.invoices.isEmpty
+            if quickbooksInvoices.isEmpty {
                 emptyInvoicesState
             } else {
-                // Recent invoices list (will be implemented after Invoice entity)
-                recentInvoicesList
+                // Show recent 3 invoices
+                VStack(spacing: 8) {
+                    ForEach(quickbooksInvoices.prefix(3), id: \.id) { invoice in
+                        NavigationLink(destination: InvoiceDetailView(invoice: invoice)) {
+                            InvoiceRowCompact(invoice: invoice)
+                        }
+                    }
+                    
+                    if quickbooksInvoices.count > 3 {
+                        Text("Showing 3 of \(quickbooksInvoices.count) invoices")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 4)
+                    }
+                }
             }
         }
         .padding()
@@ -279,19 +299,6 @@ struct CustomerDetailView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-    }
-    
-    private var recentInvoicesList: some View {
-        VStack(spacing: 8) {
-            // TODO: Loop through customer.recentInvoices (last 3)
-            ForEach(0..<3, id: \.self) { index in
-                InvoiceRowSkeleton()
-            }
-            
-            Text("Showing 3 most recent invoices")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
     }
     
     // MARK: - Customer Notes Section (EXISTING)
@@ -421,7 +428,7 @@ struct CustomerDetailView: View {
     }
 }
 
-// MARK: - ✨ NEW: Account Stat Badge Component
+// MARK: - ✨ Account Stat Badge Component
 
 struct AccountStatBadge: View {
     let icon: String
@@ -448,33 +455,37 @@ struct AccountStatBadge: View {
     }
 }
 
-// MARK: - ✨ NEW: Invoice Row Skeleton (temporary)
+// MARK: - ✨ Invoice Row Compact (NEW)
 
-struct InvoiceRowSkeleton: View {
+struct InvoiceRowCompact: View {
+    let invoice: Sale
+    
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("INV-XXXX")
+                Text(invoice.orderNumber ?? "Invoice")
                     .font(.headline)
-                    .foregroundColor(.secondary)
                 
-                Text("Date placeholder")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if let date = invoice.saleDate {
+                    Text(date.formatted(date: .abbreviated, time: .omitted))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             
             Spacer()
             
             VStack(alignment: .trailing, spacing: 4) {
-                Text("$XXX.XX")
+                Text(invoice.formattedTotalAmount)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 
-                Text("Status")
+                Text(invoice.paymentStatusDisplayName)
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(Color.gray.opacity(0.2))
+                    .background(invoice.paymentStatusColor.opacity(0.2))
+                    .foregroundColor(invoice.paymentStatusColor)
                     .cornerRadius(4)
             }
         }
@@ -559,7 +570,7 @@ struct JobRowCompact: View {
     }
 }
 
-// MARK: - ✨ Helper Extension for Time Ago Display
+// MARK: - Helper Extension for Time Ago Display
 
 extension Date {
     var timeAgoDisplay: String {

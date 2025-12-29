@@ -1,27 +1,21 @@
 //
-//  InvoiceDetailView.swift
+//  InvoiceDetailView.swift (CONFLICT-FREE VERSION)
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/24/25.
+//  Detailed view of a single QuickBooks invoice
 //
-
 
 import SwiftUI
 import CoreData
 
 struct InvoiceDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var invoice: Sale
     
-    // TODO: Replace with actual Invoice entity
-    // @ObservedObject var invoice: Invoice
-    
-    // Temporary placeholder data
-    let invoiceNumber: String = "INV-1234"
-    let customerName: String = "John Doe"
-    let invoiceDate: Date = Date()
-    let dueDate: Date = Date().addingTimeInterval(86400 * 30)
-    let status: String = "Unpaid"
+    var lineItemsArray: [SaleLineItem] {
+        guard let items = invoice.lineItems as? Set<SaleLineItem> else { return [] }
+        return Array(items).sorted { ($0.item?.name ?? "") < ($1.item?.name ?? "") }
+    }
     
     var body: some View {
         ScrollView {
@@ -30,42 +24,37 @@ struct InvoiceDetailView: View {
                 invoiceHeaderSection
                 
                 // Customer Info
-                customerInfoSection
+                if invoice.hasCustomer {
+                    customerInfoSection
+                }
                 
                 // Line Items
-                lineItemsSection
+                if !lineItemsArray.isEmpty {
+                    lineItemsSection
+                }
                 
                 // Totals
                 totalsSection
                 
-                // Payment History (if any)
-                paymentHistorySection
-                
                 // Notes (if any)
-                notesSection
+                if invoice.hasMemo {
+                    notesSection
+                }
             }
             .padding()
         }
-        .navigationTitle(invoiceNumber)
+        .navigationTitle(invoice.orderNumber ?? "Invoice")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button(action: { /* TODO: Share invoice */ }) {
+                    Button(action: { /* TODO: Share */ }) {
                         Label("Share", systemImage: "square.and.arrow.up")
-                    }
-                    
-                    Button(action: { /* TODO: Mark as paid */ }) {
-                        Label("Mark as Paid", systemImage: "checkmark.circle")
-                    }
-                    
-                    Button(action: { /* TODO: Send reminder */ }) {
-                        Label("Send Reminder", systemImage: "bell")
                     }
                     
                     Divider()
                     
-                    Button(action: { /* TODO: Open in QuickBooks */ }) {
+                    Button(action: { /* TODO: Open in QB */ }) {
                         Label("View in QuickBooks", systemImage: "arrow.up.forward.app")
                     }
                 } label: {
@@ -83,12 +72,12 @@ struct InvoiceDetailView: View {
             HStack {
                 Spacer()
                 
-                Text(status)
+                Text(invoice.paymentStatusDisplayName)
                     .font(.headline)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(statusColor.opacity(0.2))
-                    .foregroundColor(statusColor)
+                    .background(invoice.paymentStatusColor.opacity(0.2))
+                    .foregroundColor(invoice.paymentStatusColor)
                     .cornerRadius(20)
                 
                 Spacer()
@@ -100,7 +89,7 @@ struct InvoiceDetailView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
-                Text("$1,250.00") // TODO: Wire up actual amount
+                Text(invoice.formattedTotalAmount)
                     .font(.system(size: 40, weight: .bold))
             }
             
@@ -110,27 +99,36 @@ struct InvoiceDetailView: View {
                     Text("Invoice Date")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(invoiceDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                    if let date = invoice.saleDate {
+                        Text(date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
                 }
                 
                 VStack(spacing: 4) {
                     Text("Due Date")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text(dueDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(isOverdue ? .red : .primary)
+                    if let dueDate = invoice.paymentDueDate {
+                        Text(dueDate.formatted(date: .abbreviated, time: .omitted))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(invoice.isOverdue ? .red : .primary)
+                    } else {
+                        Text("—")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             
-            if isOverdue {
+            // Overdue warning
+            if invoice.isOverdue, let days = invoice.daysUntilDue {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.red)
-                    Text("Overdue by \(daysOverdue) days")
+                    Text("Overdue by \(abs(days)) days")
                         .font(.subheadline)
                         .foregroundColor(.red)
                 }
@@ -138,6 +136,13 @@ struct InvoiceDetailView: View {
                 .padding(.vertical, 6)
                 .background(Color.red.opacity(0.1))
                 .cornerRadius(8)
+            }
+            
+            // Payment terms
+            if let terms = invoice.invoiceTerms {
+                Text("Terms: \(terms)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
         .padding()
@@ -158,21 +163,24 @@ struct InvoiceDetailView: View {
                     .foregroundColor(.blue)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(customerName)
+                    Text(invoice.customerName)
                         .font(.body)
                         .fontWeight(.semibold)
                     
-                    // TODO: Add customer email/phone if available
-                    Text("customer@example.com")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let email = invoice.customer?.email {
+                        Text(email)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 Spacer()
                 
-                Button(action: { /* TODO: Navigate to customer */ }) {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .foregroundColor(.blue)
+                if let customer = invoice.customer {
+                    NavigationLink(destination: CustomerDetailView(customer: customer)) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .foregroundColor(.blue)
+                    }
                 }
             }
         }
@@ -189,16 +197,10 @@ struct InvoiceDetailView: View {
                 .font(.headline)
             
             VStack(spacing: 8) {
-                // TODO: Loop through invoice.lineItems
-                ForEach(0..<3, id: \.self) { index in
-                    InvoiceLineItemRow(
-                        description: "Service Item \(index + 1)",
-                        quantity: index + 1,
-                        unitPrice: Decimal(string: "100.00") ?? 0,
-                        total: Decimal(string: "\((index + 1) * 100)") ?? 0
-                    )
+                ForEach(lineItemsArray, id: \.id) { lineItem in
+                    InvoiceLineItemRow(lineItem: lineItem)
                     
-                    if index < 2 {
+                    if lineItem != lineItemsArray.last {
                         Divider()
                     }
                 }
@@ -213,8 +215,8 @@ struct InvoiceDetailView: View {
     
     private var totalsSection: some View {
         VStack(spacing: 12) {
-            TotalRow(label: "Subtotal", amount: Decimal(string: "1200.00") ?? 0)
-            TotalRow(label: "Tax (4.167%)", amount: Decimal(string: "50.00") ?? 0)
+            TotalRow(label: "Subtotal", amount: invoice.formattedSubtotal)
+            TotalRow(label: "Tax (\(invoice.formattedTaxRate))", amount: invoice.formattedTaxAmount)
             
             Divider()
             
@@ -222,55 +224,30 @@ struct InvoiceDetailView: View {
                 Text("Total")
                     .font(.headline)
                 Spacer()
-                Text("$1,250.00") // TODO: Wire up actual total
+                Text(invoice.formattedTotalAmount)
                     .font(.title3)
                     .fontWeight(.bold)
             }
             
-            if status != "Paid" {
+            if invoice.paymentStatus != "paid" {
                 HStack {
                     Text("Amount Due")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text("$1,250.00") // TODO: Wire up actual balance
+                    Text(invoice.formattedRemainingBalance)
                         .font(.headline)
                         .foregroundColor(.orange)
                 }
-            }
-        }
-        .padding()
-        .background(Color(uiColor: .secondarySystemBackground))
-        .cornerRadius(12)
-    }
-    
-    // MARK: - Payment History Section
-    
-    private var paymentHistorySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Payment History")
-                .font(.headline)
-            
-            // TODO: Replace with actual payment data
-            if true { // Will be: invoice.payments.isEmpty
-                VStack(spacing: 8) {
-                    Image(systemName: "dollarsign.circle")
-                        .font(.largeTitle)
-                        .foregroundColor(.gray)
-                    Text("No payments recorded")
+            } else {
+                HStack {
+                    Text("Amount Paid")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-            } else {
-                VStack(spacing: 8) {
-                    // TODO: Loop through payments
-                    PaymentRow(
-                        date: Date(),
-                        amount: Decimal(string: "500.00") ?? 0,
-                        method: "Credit Card"
-                    )
+                    Spacer()
+                    Text(invoice.formattedAmountPaid)
+                        .font(.headline)
+                        .foregroundColor(.green)
                 }
             }
         }
@@ -286,8 +263,7 @@ struct InvoiceDetailView: View {
             Text("Notes")
                 .font(.headline)
             
-            // TODO: Wire up actual notes
-            Text("Payment terms: Net 30")
+            Text(invoice.invoiceMemo ?? "")
                 .font(.body)
                 .foregroundColor(.secondary)
         }
@@ -295,63 +271,42 @@ struct InvoiceDetailView: View {
         .background(Color(uiColor: .secondarySystemBackground))
         .cornerRadius(12)
     }
-    
-    // MARK: - Helpers
-    
-    private var statusColor: Color {
-        switch status {
-        case "Paid": return .green
-        case "Unpaid": return isOverdue ? .red : .orange
-        case "Partial": return .yellow
-        default: return .gray
-        }
-    }
-    
-    private var isOverdue: Bool {
-        status != "Paid" && dueDate < Date()
-    }
-    
-    private var daysOverdue: Int {
-        guard isOverdue else { return 0 }
-        return Calendar.current.dateComponents([.day], from: dueDate, to: Date()).day ?? 0
-    }
 }
 
-// MARK: - Line Item Row Component
+// MARK: - Invoice Line Item Row Component (RENAMED to avoid conflict with AddSalesView.swift)
 
 struct InvoiceLineItemRow: View {
-    let description: String
-    let quantity: Int
-    let unitPrice: Decimal
-    let total: Decimal
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(description)
-                        .font(.body)
-                        .fontWeight(.medium)
-                    
-                    Text("\(quantity) × \(unitPrice as NSDecimalNumber, formatter: currencyFormatter)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Text(total as NSDecimalNumber, formatter: currencyFormatter)
-                    .font(.body)
-                    .fontWeight(.semibold)
-            }
-        }
-    }
+    let lineItem: SaleLineItem
     
     private var currencyFormatter: NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "USD"
         return formatter
+    }
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(lineItem.item?.name ?? "Item")
+                        .font(.body)
+                        .fontWeight(.medium)
+                    
+                    let qty = lineItem.quantity
+                    let price = lineItem.unitPrice ?? NSDecimalNumber.zero
+                    Text("\(qty) × \(price as NSDecimalNumber, formatter: currencyFormatter)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Text(lineItem.lineTotal ?? NSDecimalNumber.zero, formatter: currencyFormatter)
+                    .font(.body)
+                    .fontWeight(.semibold)
+            }
+        }
     }
 }
 
@@ -359,62 +314,16 @@ struct InvoiceLineItemRow: View {
 
 struct TotalRow: View {
     let label: String
-    let amount: Decimal
+    let amount: String
     
     var body: some View {
         HStack {
             Text(label)
                 .font(.subheadline)
             Spacer()
-            Text(amount as NSDecimalNumber, formatter: currencyFormatter)
+            Text(amount)
                 .font(.subheadline)
         }
-    }
-    
-    private var currencyFormatter: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter
-    }
-}
-
-// MARK: - Payment Row Component
-
-struct PaymentRow: View {
-    let date: Date
-    let amount: Decimal
-    let method: String
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(date.formatted(date: .abbreviated, time: .omitted))
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text(method)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text(amount as NSDecimalNumber, formatter: currencyFormatter)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.green)
-        }
-        .padding()
-        .background(Color(uiColor: .tertiarySystemBackground))
-        .cornerRadius(8)
-    }
-    
-    private var currencyFormatter: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter
     }
 }
 
@@ -423,7 +332,7 @@ struct PaymentRow: View {
 struct InvoiceDetailView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            InvoiceDetailView()
+            Text("Invoice Detail Preview")
         }
     }
 }

@@ -12,19 +12,25 @@ class QuickBooksService: QuickBooksServiceProtocol {
     private var companyId: String
     private var accessToken: String
     private var refreshToken: String
+    private var useSandbox: Bool
     
     // Account references (configured by user)
     private var incomeAccountId: String
     private var cogsAccountId: String
     private var assetAccountId: String
     
-    // QBO API endpoint (production)
-    private let baseURL = "https://quickbooks.api.intuit.com/v3/company"
+    // ✅ FIXED: Dynamic base URL based on sandbox mode
+    private var baseURL: String {
+        useSandbox ?
+            "https://sandbox-quickbooks.api.intuit.com/v3/company" :
+            "https://quickbooks.api.intuit.com/v3/company"
+    }
     
-    init(companyId: String, accessToken: String, refreshToken: String) {
+    init(companyId: String, accessToken: String, refreshToken: String, useSandbox: Bool = false) {
         self.companyId = companyId
         self.accessToken = accessToken
         self.refreshToken = refreshToken
+        self.useSandbox = useSandbox
         
         // Load account IDs from UserDefaults
         self.incomeAccountId = UserDefaults.standard.string(forKey: "quickbooksIncomeAccountId") ?? ""

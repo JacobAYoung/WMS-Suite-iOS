@@ -1,8 +1,8 @@
 //
-//  InvoicesListView.swift
+//  InvoicesListView.swift (CONFLICT-FREE VERSION)
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/24/25.
+//  Full list view of all invoices for a customer
 //
 
 import SwiftUI
@@ -33,8 +33,38 @@ struct InvoicesListView: View {
         }
     }
     
-    // TODO: Replace with actual fetch request after Invoice entity is created
-    // @FetchRequest private var invoices: FetchedResults<Invoice>
+    // Get QuickBooks invoices for this customer
+    var allInvoices: [Sale] {
+        guard let salesSet = customer.sales as? Set<Sale> else { return [] }
+        return salesSet
+            .filter { $0.source == "quickbooks" }
+            .sorted { ($0.saleDate ?? Date.distantPast) > ($1.saleDate ?? Date.distantPast) }
+    }
+    
+    var filteredInvoices: [Sale] {
+        var filtered = allInvoices
+        
+        // Filter by status
+        switch filterStatus {
+        case .all:
+            break
+        case .unpaid:
+            filtered = filtered.filter { $0.paymentStatus == "unpaid" }
+        case .paid:
+            filtered = filtered.filter { $0.paymentStatus == "paid" }
+        case .overdue:
+            filtered = filtered.filter { $0.paymentStatus == "overdue" }
+        }
+        
+        // Filter by search
+        if !searchText.isEmpty {
+            filtered = filtered.filter { invoice in
+                invoice.orderNumber?.localizedCaseInsensitiveContains(searchText) ?? false
+            }
+        }
+        
+        return filtered
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -55,10 +85,6 @@ struct InvoicesListView: View {
             
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button(action: { /* TODO: Sync invoices */ }) {
-                        Label("Sync from QuickBooks", systemImage: "arrow.triangle.2.circlepath")
-                    }
-                    
                     Button(action: { /* TODO: Export */ }) {
                         Label("Export to CSV", systemImage: "square.and.arrow.up")
                     }
@@ -97,23 +123,13 @@ struct InvoicesListView: View {
     
     private var invoicesList: some View {
         Group {
-            // TODO: Replace with actual invoice fetch
-            if true { // Will be: filteredInvoices.isEmpty
+            if filteredInvoices.isEmpty {
                 emptyStateView
             } else {
                 List {
-                    // TODO: Loop through filteredInvoices
-                    ForEach(0..<5, id: \.self) { index in
-                        Button(action: {
-                            // TODO: Navigate to InvoiceDetailView
-                        }) {
-                            InvoiceRow(
-                                invoiceNumber: "INV-\(1000 + index)",
-                                date: Date(),
-                                amount: Decimal(string: "\(100 * (index + 1))") ?? 0,
-                                status: index % 3 == 0 ? "Paid" : "Unpaid",
-                                dueDate: Date().addingTimeInterval(86400 * 30)
-                            )
+                    ForEach(filteredInvoices, id: \.id) { invoice in
+                        NavigationLink(destination: InvoiceDetailView(invoice: invoice)) {
+                            InvoiceRow(invoice: invoice)
                         }
                     }
                 }
@@ -173,13 +189,17 @@ struct InvoicesListView: View {
         }
     }
     
-    // TODO: Wire up actual counts after Invoice entity
     private func getCount(for status: InvoiceFilterStatus) -> Int {
-        return 0
+        switch status {
+        case .all: return allInvoices.count
+        case .unpaid: return allInvoices.filter { $0.paymentStatus == "unpaid" }.count
+        case .paid: return allInvoices.filter { $0.paymentStatus == "paid" }.count
+        case .overdue: return allInvoices.filter { $0.paymentStatus == "overdue" }.count
+        }
     }
 }
 
-// MARK: - Filter Pill Component
+// MARK: - Invoice Filter Pill Component (RENAMED to avoid conflict with ActiveFiltersBar.swift)
 
 struct InvoiceFilterPill: View {
     let title: String
@@ -217,22 +237,10 @@ struct InvoiceFilterPill: View {
 // MARK: - Invoice Row Component
 
 struct InvoiceRow: View {
-    let invoiceNumber: String
-    let date: Date
-    let amount: Decimal
-    let status: String
-    let dueDate: Date
+    let invoice: Sale
     
     private var isOverdue: Bool {
-        status != "Paid" && dueDate < Date()
-    }
-    
-    private var statusColor: Color {
-        switch status {
-        case "Paid": return .green
-        case "Unpaid": return isOverdue ? .red : .orange
-        default: return .gray
-        }
+        invoice.paymentStatus != "paid" && (invoice.paymentDueDate ?? Date()) < Date()
     }
     
     var body: some View {
@@ -256,15 +264,17 @@ struct InvoiceRow: View {
             
             // Invoice details
             VStack(alignment: .leading, spacing: 6) {
-                Text(invoiceNumber)
+                Text(invoice.orderNumber ?? "Invoice")
                     .font(.headline)
                 
                 HStack(spacing: 8) {
-                    Label(date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let date = invoice.saleDate {
+                        Label(date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                     
-                    if status != "Paid" {
+                    if invoice.paymentStatus != "paid", let dueDate = invoice.paymentDueDate {
                         Text("•")
                             .foregroundColor(.secondary)
                         
@@ -279,37 +289,19 @@ struct InvoiceRow: View {
             
             // Amount and status
             VStack(alignment: .trailing, spacing: 6) {
-                Text(amount as NSDecimalNumber, formatter: currencyFormatter)
+                Text(invoice.formattedTotalAmount)
                     .font(.headline)
                 
-                Text(status)
+                Text(invoice.paymentStatusDisplayName)
                     .font(.caption)
                     .fontWeight(.semibold)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(statusColor.opacity(0.2))
-                    .foregroundColor(statusColor)
+                    .background(invoice.paymentStatusColor.opacity(0.2))
+                    .foregroundColor(invoice.paymentStatusColor)
                     .cornerRadius(6)
             }
         }
         .padding(.vertical, 8)
-    }
-    
-    private var currencyFormatter: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter
-    }
-}
-
-// MARK: - Preview
-
-struct InvoicesListView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            InvoicesListView(customer: Customer())
-                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-        }
     }
 }
