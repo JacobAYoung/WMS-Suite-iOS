@@ -22,7 +22,16 @@ struct CustomerDetailView: View {
         guard let salesSet = customer.sales as? Set<Sale> else { return [] }
         return salesSet
             .filter { $0.source == "quickbooks" }
-            .sorted { ($0.saleDate ?? Date.distantPast) > ($1.saleDate ?? Date.distantPast) }
+            .sorted { sale1, sale2 in
+                // Sort unpaid invoices first, then by date
+                if sale1.paymentStatus != "paid" && sale2.paymentStatus == "paid" {
+                    return true
+                } else if sale1.paymentStatus == "paid" && sale2.paymentStatus != "paid" {
+                    return false
+                } else {
+                    return (sale1.saleDate ?? Date.distantPast) > (sale2.saleDate ?? Date.distantPast)
+                }
+            }
     }
     
     var body: some View {
@@ -463,8 +472,17 @@ struct InvoiceRowCompact: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(invoice.orderNumber ?? "Invoice")
-                    .font(.headline)
+                HStack(spacing: 4) {
+                    Text(invoice.orderNumber ?? "Invoice")
+                        .font(.headline)
+                    
+                    // Show QB ID if duplicate invoice numbers exist
+                    if let qbId = invoice.quickbooksInvoiceId {
+                        Text("(QB: \(qbId))")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
                 if let date = invoice.saleDate {
                     Text(date.formatted(date: .abbreviated, time: .omitted))

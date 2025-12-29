@@ -2,12 +2,14 @@
 //  QuickBooksSettingsView.swift
 //  WMS Suite
 //
-//  Enhanced with Customer & Invoice Sync buttons
+//  Enhanced with Customer & Invoice Sync buttons + Clear Data button
 //
 
 import SwiftUI
+import CoreData
 
 struct QuickBooksSettingsView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var tokenManager = QuickBooksTokenManager.shared
     
     // Only these two fields are user-editable
@@ -19,6 +21,7 @@ struct QuickBooksSettingsView: View {
     @State private var isConnecting = false
     @State private var errorMessage: String?
     @State private var showingHelp = false
+    @State private var showingClearDataAlert = false
     
     // NEW: Sync views
     @State private var showingCustomerSync = false
@@ -62,9 +65,11 @@ struct QuickBooksSettingsView: View {
         }
         .sheet(isPresented: $showingCustomerSync) {
             QuickBooksCustomerSyncView()
+                .environment(\.managedObjectContext, viewContext)
         }
         .sheet(isPresented: $showingInvoiceSync) {
             QuickBooksInvoiceSyncView()
+                .environment(\.managedObjectContext, viewContext)
         }
     }
     
@@ -185,10 +190,37 @@ struct QuickBooksSettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            
+            // ✅ NEW: Clear QuickBooks Data (Destructive)
+            Button(role: .destructive, action: { showingClearDataAlert = true }) {
+                HStack {
+                    Image(systemName: "trash.fill")
+                        .foregroundColor(.red)
+                        .frame(width: 30)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Clear QuickBooks Data")
+                            .font(.body)
+                        Text("Delete all synced customers & invoices")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                }
+            }
         } header: {
             Text("Data Sync")
         } footer: {
             Text("Sync your QuickBooks data into the app. Customers must be synced before invoices to link them properly.")
+        }
+        .alert("Clear QuickBooks Data?", isPresented: $showingClearDataAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All Data", role: .destructive) {
+                clearQuickBooksData()
+            }
+        } message: {
+            Text("This will delete all customers and invoices synced from QuickBooks. Local customers and orders will not be affected. You can re-sync anytime.")
         }
     }
     
@@ -345,9 +377,50 @@ struct QuickBooksSettingsView: View {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.warning)
     }
+    
+    // ✅ NEW: Clear QuickBooks Data Method
+    private func clearQuickBooksData() {
+        print("🗑️ Clearing QuickBooks data...")
+        
+        // Delete all QuickBooks customers
+        let customerFetch = NSFetchRequest<Customer>(entityName: "Customer")
+        customerFetch.predicate = NSPredicate(format: "quickbooksCustomerId != nil")
+        
+        do {
+            let qbCustomers = try viewContext.fetch(customerFetch)
+            print("   Deleting \(qbCustomers.count) QuickBooks customers...")
+            qbCustomers.forEach { viewContext.delete($0) }
+        } catch {
+            print("❌ Error fetching QB customers: \(error)")
+        }
+        
+        // Delete all QuickBooks invoices
+        let salesFetch = NSFetchRequest<Sale>(entityName: "Sale")
+        salesFetch.predicate = NSPredicate(format: "source == %@", "quickbooks")
+        
+        do {
+            let qbInvoices = try viewContext.fetch(salesFetch)
+            print("   Deleting \(qbInvoices.count) QuickBooks invoices...")
+            qbInvoices.forEach { viewContext.delete($0) }
+        } catch {
+            print("❌ Error fetching QB invoices: \(error)")
+        }
+        
+        // Save changes
+        do {
+            try viewContext.save()
+            print("✅ QuickBooks data cleared successfully")
+            
+            // Haptic feedback
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+        } catch {
+            print("❌ Error saving context: \(error)")
+        }
+    }
 }
 
-// MARK: - Help View (UNCHANGED)
+// MARK: - Help View
 
 struct QuickBooksHelpView: View {
     @Environment(\.dismiss) private var dismiss
@@ -477,5 +550,6 @@ struct InstructionStep: View {
 #Preview {
     NavigationView {
         QuickBooksSettingsView()
+            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }

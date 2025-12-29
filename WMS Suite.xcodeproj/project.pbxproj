@@ -20,6 +20,7 @@
 		C87700B92EFC529B00E5E58A /* InvoiceDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700B82EFC529B00E5E58A /* InvoiceDetailView.swift */; };
 		C87700BD2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */; };
 		C87700C12EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */; };
+		C87700D72F02F1DD00E5E58A /* IDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700D62F02F1DD00E5E58A /* IDGenerator.swift */; };
 		C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48262EEE288C0088DD7D /* AddSalesView.swift */; };
 		C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */; };
 		C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */; };
@@ -106,6 +107,7 @@
 		C87700B82EFC529B00E5E58A /* InvoiceDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvoiceDetailView.swift; sourceTree = "<group>"; };
 		C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksInvoiceSyncView.swift; sourceTree = "<group>"; };
 		C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksCustomerSyncView.swift; sourceTree = "<group>"; };
+		C87700D62F02F1DD00E5E58A /* IDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDGenerator.swift; sourceTree = "<group>"; };
 		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8AC48262EEE288C0088DD7D /* AddSalesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSalesView.swift; sourceTree = "<group>"; };
 		C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryView.swift; sourceTree = "<group>"; };
@@ -202,6 +204,7 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
+				C87700D62F02F1DD00E5E58A /* IDGenerator.swift */,
 				C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */,
 				C8FBB52F2EEE0DDF001FC318 /* ActivityViewController.swift */,
 				C8CB355B2EF7867700C61FCE /* AdaptiveContainer.swift */,
@@ -452,6 +455,7 @@
 				C8CB350F2EF4F63E00C61FCE /* SortButton.swift in Sources */,
 				C8CB355C2EF7867700C61FCE /* AdaptiveContainer.swift in Sources */,
 				C8CB354C2EF74ADE00C61FCE /* AddJobView.swift in Sources */,
+				C87700D72F02F1DD00E5E58A /* IDGenerator.swift in Sources */,
 				C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */,
 				C8FBB5302EEE0DE5001FC318 /* ActivityViewController.swift in Sources */,
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,

@@ -249,7 +249,8 @@ class QuickBooksService: QuickBooksServiceProtocol {
                 isNew = false
             } else {
                 customer = Customer(context: context)
-                customer.id = Int32(Date().timeIntervalSince1970)
+                // Use hashed QB ID for consistency - same QB ID always produces same Int32
+                customer.id = IDGenerator.hashQuickBooksCustomerID(qbCustomerId)
                 customer.createdDate = Date()
                 isNew = true
             }
@@ -433,7 +434,8 @@ class QuickBooksService: QuickBooksServiceProtocol {
                 isNew = false
             } else {
                 sale = Sale(context: context)
-                sale.id = Int32(Date().timeIntervalSince1970)
+                // Use hashed QB Invoice ID for consistency - same QB ID always produces same Int32
+                sale.id = IDGenerator.hashQuickBooksInvoiceID(qbInvoiceId)
                 isNew = true
             }
             
