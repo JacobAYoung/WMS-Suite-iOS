@@ -2,14 +2,6 @@
 //  QuickBooksCustomerSyncView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/24/25.
-//
-
-
-//
-//  QuickBooksCustomerSyncView.swift
-//  WMS Suite
-//
 //  UI for syncing customers from QuickBooks with progress tracking
 //
 
@@ -322,7 +314,8 @@ struct QuickBooksCustomerSyncView: View {
         let service = QuickBooksService(
             companyId: companyId,
             accessToken: accessToken,
-            refreshToken: tokenManager.getCurrentRefreshToken() ?? ""
+            refreshToken: tokenManager.getCurrentRefreshToken() ?? "",
+            useSandbox: tokenManager.useSandbox
         )
         
         do {

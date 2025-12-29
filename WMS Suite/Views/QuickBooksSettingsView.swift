@@ -2,7 +2,7 @@
 //  QuickBooksSettingsView.swift
 //  WMS Suite
 //
-//  COMPLETELY REWRITTEN: OAuth-first design with modern UX
+//  Enhanced with Customer & Invoice Sync buttons
 //
 
 import SwiftUI
@@ -20,6 +20,10 @@ struct QuickBooksSettingsView: View {
     @State private var errorMessage: String?
     @State private var showingHelp = false
     
+    // NEW: Sync views
+    @State private var showingCustomerSync = false
+    @State private var showingInvoiceSync = false
+    
     var body: some View {
         Form {
             // SECTION 1: Connection Status (Always Visible)
@@ -28,13 +32,18 @@ struct QuickBooksSettingsView: View {
             // SECTION 2: Quick Actions
             quickActionsSection
             
-            // SECTION 3: OAuth Configuration (Collapsible)
+            // NEW: SECTION 3: Data Sync (only when connected)
+            if tokenManager.isAuthenticated {
+                dataSyncSection
+            }
+            
+            // SECTION 4: OAuth Configuration (Collapsible)
             oauthConfigurationSection
             
-            // SECTION 4: Environment Toggle
+            // SECTION 5: Environment Toggle
             environmentSection
             
-            // SECTION 5: Help & Instructions
+            // SECTION 6: Help & Instructions
             helpSection
         }
         .navigationTitle("QuickBooks")
@@ -50,6 +59,12 @@ struct QuickBooksSettingsView: View {
             NavigationView {
                 QuickBooksHelpView()
             }
+        }
+        .sheet(isPresented: $showingCustomerSync) {
+            QuickBooksCustomerSyncView()
+        }
+        .sheet(isPresented: $showingInvoiceSync) {
+            QuickBooksInvoiceSyncView()
         }
     }
     
@@ -118,6 +133,62 @@ struct QuickBooksSettingsView: View {
                         .foregroundColor(.orange)
                 }
             }
+        }
+    }
+    
+    // MARK: - ✨ NEW: Data Sync Section
+    
+    private var dataSyncSection: some View {
+        Section {
+            // Sync Customers
+            Button(action: { showingCustomerSync = true }) {
+                HStack {
+                    Image(systemName: "person.2.fill")
+                        .foregroundColor(.blue)
+                        .frame(width: 30)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Sync Customers")
+                            .font(.body)
+                        Text("Import customers from QuickBooks")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            // Sync Invoices
+            Button(action: { showingInvoiceSync = true }) {
+                HStack {
+                    Image(systemName: "doc.text.fill")
+                        .foregroundColor(.green)
+                        .frame(width: 30)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Sync Invoices")
+                            .font(.body)
+                        Text("Import invoices from QuickBooks")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        } header: {
+            Text("Data Sync")
+        } footer: {
+            Text("Sync your QuickBooks data into the app. Customers must be synced before invoices to link them properly.")
         }
     }
     
@@ -276,7 +347,7 @@ struct QuickBooksSettingsView: View {
     }
 }
 
-// MARK: - Help View
+// MARK: - Help View (UNCHANGED)
 
 struct QuickBooksHelpView: View {
     @Environment(\.dismiss) private var dismiss

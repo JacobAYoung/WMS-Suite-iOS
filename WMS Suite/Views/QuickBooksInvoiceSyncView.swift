@@ -314,7 +314,8 @@ struct QuickBooksInvoiceSyncView: View {
         let service = QuickBooksService(
             companyId: companyId,
             accessToken: accessToken,
-            refreshToken: tokenManager.getCurrentRefreshToken() ?? ""
+            refreshToken: tokenManager.getCurrentRefreshToken() ?? "",
+            useSandbox: tokenManager.useSandbox
         )
         
         do {
