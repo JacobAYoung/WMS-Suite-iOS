@@ -2,7 +2,7 @@
 //  CustomersView.swift
 //  WMS Suite
 //
-//  Main customer list view with search and filtering
+//  Main customer list view with QuickBooks integration and consistent job stats
 //
 
 import SwiftUI
@@ -24,7 +24,9 @@ struct CustomersView: View {
             return Array(customers)
         } else {
             return customers.filter { customer in
-                customer.name?.localizedCaseInsensitiveContains(searchText) ?? false
+                customer.name?.localizedCaseInsensitiveContains(searchText) ?? false ||
+                customer.companyName?.localizedCaseInsensitiveContains(searchText) ?? false ||
+                customer.email?.localizedCaseInsensitiveContains(searchText) ?? false
             }
         }
     }
@@ -130,16 +132,32 @@ struct CustomersView: View {
     }
 }
 
-// MARK: - Customer Row
+// MARK: - Customer Row (ENHANCED)
 
 struct CustomerRow: View {
-    let customer: Customer
+    @ObservedObject var customer: Customer
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Customer name
-            Text(customer.displayName)
-                .font(.headline)
+            // Customer name with QB badge
+            HStack(spacing: 8) {
+                Text(customer.displayName)
+                    .font(.headline)
+                
+                // QuickBooks badge
+                if customer.isSyncedWithQuickBooks {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+            }
+            
+            // Company name (if available) - helps distinguish duplicate names
+            if let companyName = customer.companyName, !companyName.isEmpty {
+                Text(companyName)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
             
             // Contact info
             HStack(spacing: 16) {
@@ -156,19 +174,26 @@ struct CustomerRow: View {
                 }
             }
             
-            // Job stats
-            if customer.totalJobs > 0 {
-                HStack(spacing: 16) {
-                    Label("\(customer.upcomingJobs.count) upcoming", systemImage: "calendar")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                    
-                    Label("\(customer.completedJobs.count) completed", systemImage: "checkmark.circle")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                }
+            // Job stats (ALWAYS SHOW - even if 0)
+            HStack(spacing: 16) {
+                Label("\(customer.upcomingJobs.count) upcoming", systemImage: "calendar")
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                
+                Label("\(customer.completedJobs.count) completed", systemImage: "checkmark.circle")
+                    .font(.caption)
+                    .foregroundColor(.green)
             }
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Preview
+
+struct CustomersView_Previews: PreviewProvider {
+    static var previews: some View {
+        CustomersView()
+            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
     }
 }

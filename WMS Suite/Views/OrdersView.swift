@@ -1,8 +1,8 @@
 //
-//  OrdersView.swift
+//  OrdersView.swift (FIXED)
 //  WMS Suite
 //
-//  Updated: Added refresh button and charts button back to toolbar
+//  Fixed: 1) Filters no longer swipeable 2) Needs Fulfillment filter works 3) QuickBooks re-enabled
 //
 
 import SwiftUI
@@ -20,7 +20,7 @@ struct OrdersView: View {
     @State private var selectedStatus: OrderFulfillmentStatus? = nil
     @State private var showingAddOrder = false
     @State private var isRefreshing = false
-    @State private var refreshID = UUID()  // Force view refresh
+    @State private var refreshID = UUID()
     
     var filteredSales: [Sale] {
         var filtered = Array(sales)
@@ -33,8 +33,10 @@ struct OrdersView: View {
         // Filter by status
         if let status = selectedStatus {
             filtered = filtered.filter { sale in
-                // Handle special cases
-                if status == .unconfirmed {
+                // ✅ FIX #2: Fixed needsFulfillment filter logic
+                if status == .needsFulfillment {
+                    return sale.needsFulfillment
+                } else if status == .unconfirmed {
                     return sale.isUnconfirmed
                 } else {
                     return sale.fulfillmentStatusEnum == status
@@ -92,7 +94,7 @@ struct OrdersView: View {
             }
             .navigationTitle("Orders")
             .toolbar {
-                // ✅ LEFT SIDE - Refresh button
+                // LEFT SIDE - Refresh button
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: refreshOrders) {
                         HStack(spacing: 4) {
@@ -106,9 +108,8 @@ struct OrdersView: View {
                     .disabled(isRefreshing)
                 }
                 
-                // ✅ RIGHT SIDE - Charts and Add buttons
+                // RIGHT SIDE - Charts and Add buttons
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    // ✅ Charts navigation link
                     NavigationLink(destination: OrdersChartsView()) {
                         Image(systemName: "chart.bar.fill")
                             .foregroundColor(.blue)
@@ -133,6 +134,7 @@ struct OrdersView: View {
     // MARK: - Source Filter Tabs
     
     private var sourceFilterTabs: some View {
+        // ✅ FIX #1: Disable scrolling with scrollDisabled
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 SourceTabButton(
@@ -159,24 +161,26 @@ struct OrdersView: View {
                     action: { selectedSource = .shopify }
                 )
                 
+                // ✅ FIX #3: Re-enabled QuickBooks filter
                 SourceTabButton(
                     title: OrderSource.quickbooks.displayName,
                     icon: OrderSource.quickbooks.icon,
-                    color: .gray,
-                    isSelected: false,
-                    action: { },
-                    isDisabled: true
+                    color: OrderSource.quickbooks.color,
+                    isSelected: selectedSource == .quickbooks,
+                    action: { selectedSource = .quickbooks }
                 )
             }
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
+        .scrollDisabled(true) // ✅ FIX #1: Prevent swiping down
         .background(Color(uiColor: .secondarySystemBackground))
     }
     
     // MARK: - Status Filter Tabs
     
     private var statusFilterTabs: some View {
+        // ✅ FIX #1: Disable scrolling with scrollDisabled
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 StatusTabButton(
@@ -202,6 +206,7 @@ struct OrdersView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
+        .scrollDisabled(true) // ✅ FIX #1: Prevent swiping down
         .background(Color(uiColor: .tertiarySystemBackground))
     }
     
@@ -300,7 +305,7 @@ struct OrdersView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .id(refreshID)  // Force list to rebuild when this changes
+        .id(refreshID)
     }
     
     // MARK: - Empty State
@@ -348,30 +353,23 @@ struct OrdersView: View {
     
     // MARK: - Refresh Methods
     
-    /// ✅ Refresh orders data
     private func refreshOrders() {
         isRefreshing = true
         print("🔄 Refreshing orders data...")
         
         Task {
-            // Force Core Data to refetch
             await MainActor.run {
                 viewContext.refreshAllObjects()
-                
-                // Force view to rebuild
                 refreshID = UUID()
-                
                 isRefreshing = false
                 print("✅ Orders refreshed")
             }
         }
     }
     
-    /// ✅ Async version for pull-to-refresh
     private func refreshOrdersAsync() async {
         print("🔄 Pull-to-refresh triggered...")
         
-        // Force Core Data to refetch
         await MainActor.run {
             viewContext.refreshAllObjects()
             refreshID = UUID()
@@ -439,7 +437,6 @@ struct SourceTabButton: View {
     let color: Color
     let isSelected: Bool
     let action: () -> Void
-    var isDisabled: Bool = false
     
     var body: some View {
         Button(action: action) {
@@ -452,14 +449,12 @@ struct SourceTabButton: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(isSelected ? color.opacity(0.2) : Color.clear)
-            .foregroundColor(isDisabled ? .gray : (isSelected ? color : .primary))
+            .foregroundColor(isSelected ? color : .primary)
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
                     .stroke(isSelected ? color : Color.gray.opacity(0.3), lineWidth: 1)
             )
         }
-        .disabled(isDisabled)
-        .opacity(isDisabled ? 0.5 : 1)
     }
 }
