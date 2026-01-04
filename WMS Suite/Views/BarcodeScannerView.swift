@@ -17,113 +17,134 @@ struct BarcodeScannerView: View {
     @State private var showingResults = false
     @State private var scannedCode = ""
     @State private var showingPermissionAlert = false
+    var isEmbedded: Bool = false  // NEW: Track if embedded in another view
+    
+    // Adaptive scan frame size for iPad
+    private var scanFrameSize: CGFloat {
+        UIDevice.current.userInterfaceIdiom == .pad ? 450 : 250
+    }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Camera preview
-                if scannerManager.isAuthorized {
-                    CameraPreviewView(session: scannerManager.session)
-                        .edgesIgnoringSafeArea(.all)
-                } else {
-                    Color.black
-                        .edgesIgnoringSafeArea(.all)
-                    
-                    VStack(spacing: 20) {
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.white)
-                        Text("Camera Access Required")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                        Text("Please enable camera access in Settings to scan barcodes")
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.horizontal)
-                        
-                        Button(action: {
-                            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(settingsUrl)
-                            }
-                        }) {
-                            Text("Open Settings")
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
-                    }
-                }
-                
-                // Scanning overlay
-                VStack {
-                    // Top bar showing what was scanned
-                    if !scannedCode.isEmpty {
-                        HStack {
-                            Image(systemName: "barcode.viewfinder")
-                                .foregroundColor(.green)
-                            Text("Scanned: \(scannedCode)")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                        }
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(10)
-                        .padding()
-                    }
-                    
-                    Spacer()
-                    
-                    // Scanning frame
-                    Rectangle()
-                        .stroke(Color.green, lineWidth: 3)
-                        .frame(width: 250, height: 250)
-                    
-                    Spacer()
-                    
-                    // Instructions
-                    Text("Align barcode within the frame")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(10)
-                        .padding()
+        // Only wrap in NavigationView if not embedded
+        Group {
+            if isEmbedded {
+                scannerContent
+            } else {
+                NavigationView {
+                    scannerContent
                 }
             }
-            .navigationTitle("Scan Barcode")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+        }
+    }
+    
+    // MARK: - Scanner Content
+    
+    private var scannerContent: some View {
+        ZStack {
+            // Camera preview
+            if scannerManager.isAuthorized {
+                CameraPreviewView(session: scannerManager.session)
+                    .edgesIgnoringSafeArea(.all)
+            } else {
+                Color.black
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 20) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.white)
+                    Text("Camera Access Required")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    Text("Please enable camera access in Settings to scan barcodes")
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.white.opacity(0.8))
+                        .padding(.horizontal)
+                    
+                    Button(action: {
+                        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(settingsUrl)
+                        }
+                    }) {
+                        Text("Open Settings")
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                }
+            }
+            
+            // Scanning overlay
+            VStack {
+                // Top bar showing what was scanned
+                if !scannedCode.isEmpty {
+                    HStack {
+                        Image(systemName: "barcode.viewfinder")
+                            .foregroundColor(.green)
+                        Text("Scanned: \(scannedCode)")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .background(Color.black.opacity(0.7))
+                    .cornerRadius(10)
+                    .padding()
+                }
+                
+                Spacer()
+                
+                // Scanning frame - adaptive size for iPad
+                Rectangle()
+                    .stroke(Color.green, lineWidth: 4)
+                    .frame(width: scanFrameSize, height: scanFrameSize)
+                
+                Spacer()
+                
+                // Instructions
+                Text("Align barcode within the frame")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.black.opacity(0.7))
+                    .cornerRadius(10)
+                    .padding()
+            }
+        }
+        .navigationTitle(isEmbedded ? "" : "Scan Barcode")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if !isEmbedded {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
             }
-            .onAppear {
-                print("Scanner view appeared")
-                print("Authorization status: \(scannerManager.isAuthorized)")
-                scannerManager.startScanning()
+        }
+        .onAppear {
+            print("Scanner view appeared")
+            print("Authorization status: \(scannerManager.isAuthorized)")
+            scannerManager.startScanning()
+        }
+        .onDisappear {
+            print("Scanner view disappeared")
+            scannerManager.stopScanning()
+        }
+        .onChange(of: scannerManager.scannedCode) { _, newValue in
+            if let code = newValue, !code.isEmpty {
+                print("Code scanned: \(code)")
+                scannedCode = code
+                searchForItem(code: code)
             }
-            .onDisappear {
-                print("Scanner view disappeared")
-                scannerManager.stopScanning()
-            }
-            .onChange(of: scannerManager.scannedCode) { _, newValue in
-                if let code = newValue, !code.isEmpty {
-                    print("Code scanned: \(code)")
-                    scannedCode = code
-                    searchForItem(code: code)
-                }
-            }
-            .sheet(isPresented: $showingResults) {
-                SearchResultsView(
-                    scannedCode: scannedCode,
-                    results: searchResults,
-                    viewModel: viewModel,
-                    isPresented: $showingResults
-                )
-            }
+        }
+        .sheet(isPresented: $showingResults) {
+            SearchResultsView(
+                scannedCode: scannedCode,
+                results: searchResults,
+                viewModel: viewModel,
+                isPresented: $showingResults
+            )
         }
     }
     
@@ -146,7 +167,7 @@ class BarcodeScannerManager: NSObject, ObservableObject {
     
     let session = AVCaptureSession()
     private var videoPreviewLayer: AVCaptureVideoPreviewLayer?
-    private var hasScanned = false
+    var hasScanned = false  // Changed from private to internal for extensions
     
     override init() {
         super.init()
@@ -240,6 +261,12 @@ class BarcodeScannerManager: NSObject, ObservableObject {
                 print("Session stopped running")
             }
         }
+    }
+    
+    func resetScanner() {
+        hasScanned = false
+        scannedCode = nil
+        startScanning()
     }
 }
 

@@ -4,4 +4,16 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:QuickBooksAutoSyncManager.swift">
+   </FileRef>
+   <FileRef
+      location = "group:QUICKBOOKS_INVENTORY_COREDATA_UPDATES.md">
+   </FileRef>
+   <FileRef
+      location = "group:QUICKBOOKS_INVENTORY_IMPLEMENTATION.md">
+   </FileRef>
+   <FileRef
+      location = "group:COREDATA_VS_EXTENSIONS_STATUS.md">
+   </FileRef>
 </Workspace>

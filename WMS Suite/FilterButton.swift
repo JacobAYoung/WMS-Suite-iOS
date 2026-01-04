@@ -9,12 +9,17 @@ import SwiftUI
 
 struct FilterButton: View {
     @Binding var selectedFilter: InventoryFilterOption
+    @Binding var showingTagPicker: Bool
     
     var body: some View {
         Menu {
             ForEach(InventoryFilterOption.allCases) { filter in
                 Button(action: {
-                    selectedFilter = filter
+                    if filter == .byTag {
+                        showingTagPicker = true
+                    } else {
+                        selectedFilter = filter
+                    }
                 }) {
                     HStack {
                         Label(filter.rawValue, systemImage: filter.icon)

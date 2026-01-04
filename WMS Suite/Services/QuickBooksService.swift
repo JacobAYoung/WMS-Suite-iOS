@@ -492,7 +492,7 @@ class QuickBooksService: QuickBooksServiceProtocol {
             let unitPrice = salesDetail["UnitPrice"] as? Double ?? 0.0
             let lineTotal = lineData["Amount"] as? Double ?? 0.0
             
-            lineItem.quantity = Int32(quantity)
+            lineItem.quantity = NSDecimalNumber(value: quantity)
             lineItem.unitPrice = NSDecimalNumber(value: unitPrice)
             lineItem.lineTotal = NSDecimalNumber(value: lineTotal)
             
@@ -561,7 +561,7 @@ class QuickBooksService: QuickBooksServiceProtocol {
             "Description": item.itemDescription ?? "",
             "Type": "Inventory",
             "TrackQtyOnHand": true,
-            "QtyOnHand": Int(item.quantity),
+            "QtyOnHand": NSDecimalNumber(decimal: item.quantity).doubleValue,
             "InvStartDate": ISO8601DateFormatter().string(from: Date()),
             "IncomeAccountRef": ["value": incomeAccountId],
             "ExpenseAccountRef": ["value": cogsAccountId],
@@ -600,7 +600,7 @@ class QuickBooksService: QuickBooksServiceProtocol {
             "Name": item.name ?? item.sku ?? "Unknown Item",
             "Sku": item.sku ?? "",
             "Description": item.itemDescription ?? "",
-            "QtyOnHand": Int(item.quantity),
+            "QtyOnHand": NSDecimalNumber(decimal: item.quantity).doubleValue,
             "sparse": true
         ]
         
@@ -613,6 +613,358 @@ class QuickBooksService: QuickBooksServiceProtocol {
     
     private func fetchQBOItem(itemId: String) async throws -> [String: Any] {
         let url = URL(string: "\(baseURL)/\(companyId)/item/\(itemId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, _) = try await makeAuthenticatedRequest(request)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let item = json["Item"] as? [String: Any] else {
+            throw QuickBooksError.parseError
+        }
+        
+        return item
+    }
+    
+    // MARK: - ✅ INVENTORY SYNC (WITH PAGINATION)
+    
+    /// Sync inventory items from QuickBooks with pagination support
+    /// Fetches all items of Type='Inventory' and saves to Core Data
+    func syncInventory(context: NSManagedObjectContext, logMessage: @escaping (String) -> Void) async throws {
+        guard !accessToken.isEmpty && !companyId.isEmpty else {
+            throw QuickBooksError.missingCredentials
+        }
+        
+        print("🔄 Starting paginated inventory sync from QuickBooks...")
+        logMessage("Starting inventory sync from QuickBooks...")
+        
+        var allItems: [[String: Any]] = []
+        var currentPosition = 1
+        let pageSize = 100
+        var hasMorePages = true
+        var pageCount = 0
+        
+        // Fetch all pages
+        while hasMorePages {
+            pageCount += 1
+            print("📄 Fetching inventory page \(pageCount) (position \(currentPosition))...")
+            logMessage("Fetching inventory page \(pageCount)...")
+            
+            do {
+                let (items, _) = try await fetchInventoryPage(startPosition: currentPosition, maxResults: pageSize)
+                allItems.append(contentsOf: items)
+                
+                if items.count < pageSize {
+                    hasMorePages = false
+                } else {
+                    currentPosition += items.count
+                }
+                
+                // Safety limit
+                if pageCount > 100 {
+                    print("⚠️ Reached safety limit of 100 pages")
+                    logMessage("⚠️ Safety limit reached - synced first 10,000 items")
+                    break
+                }
+            } catch {
+                print("❌ Error fetching inventory page \(pageCount): \(error)")
+                throw error
+            }
+        }
+        
+        print("✅ Fetched \(allItems.count) inventory items across \(pageCount) pages")
+        logMessage("Fetched \(allItems.count) inventory items from QuickBooks")
+        
+        var createdCount = 0
+        var updatedCount = 0
+        
+        // Process each item
+        for (index, itemData) in allItems.enumerated() {
+            do {
+                let result = try await processInventoryItem(itemData, context: context)
+                if result.created {
+                    createdCount += 1
+                } else if result.updated {
+                    updatedCount += 1
+                }
+                
+                // Progress update every 50 items
+                if (index + 1) % 50 == 0 {
+                    logMessage("Processed \(index + 1)/\(allItems.count) inventory items...")
+                }
+            } catch {
+                print("❌ Error processing inventory item: \(error)")
+            }
+        }
+        
+        logMessage("✅ Created \(createdCount) new, updated \(updatedCount) existing items")
+        print("✅ QuickBooks inventory sync completed")
+    }
+    
+    /// Fetch a single page of inventory items from QuickBooks
+    private func fetchInventoryPage(startPosition: Int, maxResults: Int) async throws -> (items: [[String: Any]], maxResults: Int) {
+        let query = "SELECT * FROM Item WHERE Type = 'Inventory' AND Active = true STARTPOSITION \(startPosition) MAXRESULTS \(maxResults)"
+        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        
+        let url = URL(string: "\(baseURL)/\(companyId)/query?query=\(encodedQuery)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        let (data, _) = try await makeAuthenticatedRequest(request)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let queryResponse = json["QueryResponse"] as? [String: Any] else {
+            throw QuickBooksError.parseError
+        }
+        
+        let items = queryResponse["Item"] as? [[String: Any]] ?? []
+        let maxResults = queryResponse["maxResults"] as? Int ?? maxResults
+        
+        return (items, maxResults)
+    }
+    
+    /// Process a single inventory item from QuickBooks and save/update in Core Data
+    private func processInventoryItem(_ itemData: [String: Any], context: NSManagedObjectContext) async throws -> (created: Bool, updated: Bool) {
+        return try await context.perform {
+            guard let qbItemId = itemData["Id"] as? String else {
+                return (false, false)
+            }
+            
+            // Extract item details from QuickBooks response
+            let name = itemData["Name"] as? String ?? "Unknown Item"
+            let description = itemData["Description"] as? String
+            let sku = itemData["Sku"] as? String ?? name // Use name as SKU if not provided
+            
+            // QuickBooks specific fields
+            let qtyOnHand = (itemData["QtyOnHand"] as? Double).map { Decimal($0) } ?? 0
+            let reorderPoint = (itemData["ReorderPoint"] as? Double).map { Decimal($0) } ?? 0
+            
+            // Pricing information
+            let unitPrice = (itemData["UnitPrice"] as? Double).map { Decimal($0) }
+            let purchaseCost = (itemData["PurchaseCost"] as? Double).map { Decimal($0) }
+            
+            // Income and expense account tracking
+            let incomeAccountRef = itemData["IncomeAccountRef"] as? [String: Any]
+            let expenseAccountRef = itemData["ExpenseAccountRef"] as? [String: Any]
+            let assetAccountRef = itemData["AssetAccountRef"] as? [String: Any]
+            
+            // Check if item already exists
+            let fetchRequest = NSFetchRequest<InventoryItem>(entityName: "InventoryItem")
+            fetchRequest.predicate = NSPredicate(format: "quickbooksItemId == %@", qbItemId)
+            fetchRequest.fetchLimit = 1
+            
+            let existingItems = try context.fetch(fetchRequest)
+            
+            let item: InventoryItem
+            let isNew: Bool
+            
+            if let existingItem = existingItems.first {
+                item = existingItem
+                isNew = false
+                print("   Updating existing item: \(name)")
+            } else {
+                item = InventoryItem(context: context)
+                // Use hash-based ID for consistency - same QB ID always produces same Int32
+                item.id = IDGenerator.hashQuickBooksItemID(qbItemId)
+                item.quickbooksItemId = qbItemId
+                isNew = true
+                print("   Creating new item: \(name)")
+            }
+            
+            // Update all fields
+            item.name = name
+            item.itemDescription = description
+            item.sku = sku
+            item.quantity = NSDecimalNumber(decimal: qtyOnHand)
+            item.minStockLevel = NSDecimalNumber(decimal: reorderPoint)
+            item.lastUpdated = Date()
+            item.lastSyncedQuickbooksDate = Date()
+            
+            // Store QuickBooks pricing (using extensions that store in UserDefaults)
+            if let price = unitPrice {
+                item.quickbooksPrice = price
+            }
+            if let cost = purchaseCost {
+                item.quickbooksCost = cost
+            }
+            
+            // Store account references for future updates
+            if let incomeAcct = incomeAccountRef?["value"] as? String {
+                item.quickbooksIncomeAccountId = incomeAcct
+            }
+            if let expenseAcct = expenseAccountRef?["value"] as? String {
+                item.quickbooksExpenseAccountId = expenseAcct
+            }
+            if let assetAcct = assetAccountRef?["value"] as? String {
+                item.quickbooksAssetAccountId = assetAcct
+            }
+            
+            // Save context
+            try context.save()
+            
+            return (created: isNew, updated: !isNew)
+        }
+    }
+    
+    // MARK: - ✅ PUSH INVENTORY TO QUICKBOOKS (UPDATE)
+    
+    /// Push inventory item updates TO QuickBooks
+    /// Creates new item if doesn't exist, updates if it does
+    func pushInventoryItem(_ item: InventoryItem) async throws -> String {
+        guard !accessToken.isEmpty && !companyId.isEmpty else {
+            throw QuickBooksError.missingCredentials
+        }
+        
+        print("🔄 Pushing inventory item to QuickBooks: \(item.name ?? "Unknown")")
+        
+        // Check if item already exists in QuickBooks
+        if let qbItemId = item.quickbooksItemId, !qbItemId.isEmpty {
+            // UPDATE existing item
+            try await updateInventoryItem(item, qbItemId: qbItemId)
+            return qbItemId
+        } else {
+            // CREATE new item
+            let newItemId = try await createInventoryItem(item)
+            return newItemId
+        }
+    }
+    
+    /// Create a new inventory item in QuickBooks
+    private func createInventoryItem(_ item: InventoryItem) async throws -> String {
+        print("   Creating new item in QuickBooks...")
+        
+        let url = URL(string: "\(baseURL)/\(companyId)/item")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        // Build QuickBooks Item JSON
+        var itemJson: [String: Any] = [
+            "Name": item.sku ?? item.name ?? "Unknown",
+            "Type": "Inventory",
+            "TrackQtyOnHand": true,
+            "QtyOnHand": NSDecimalNumber(decimal: item.quantity).doubleValue,
+            "InvStartDate": ISO8601DateFormatter().string(from: Date())
+        ]
+        
+        // Add optional fields
+        if let description = item.itemDescription {
+            itemJson["Description"] = description
+        }
+        
+        if let sku = item.sku {
+            itemJson["Sku"] = sku
+        }
+        
+        // Add pricing if available
+        let qbCost = item.quickbooksCost
+        if qbCost > 0 {
+            itemJson["PurchaseCost"] = NSDecimalNumber(decimal: qbCost).doubleValue
+        }
+        
+        if let price = item.quickbooksPrice, price > 0 {
+            itemJson["UnitPrice"] = NSDecimalNumber(decimal: price).doubleValue
+        } else if let price = item.sellingPrice, price > 0 {
+            itemJson["UnitPrice"] = NSDecimalNumber(decimal: price).doubleValue
+        }
+        
+        // Add reorder point
+        if item.minStockLevel > 0 {
+            itemJson["ReorderPoint"] = item.minStockLevel
+        }
+        
+        // Account references (required for inventory items)
+        // Prefer item-specific accounts, fall back to service defaults
+        let finalIncomeAccountId = item.quickbooksIncomeAccountId ?? (incomeAccountId.isEmpty ? nil : incomeAccountId)
+        let finalExpenseAccountId = item.quickbooksExpenseAccountId ?? (cogsAccountId.isEmpty ? nil : cogsAccountId)
+        let finalAssetAccountId = item.quickbooksAssetAccountId ?? (assetAccountId.isEmpty ? nil : assetAccountId)
+        
+        if let incomeAccountId = finalIncomeAccountId {
+            itemJson["IncomeAccountRef"] = ["value": incomeAccountId]
+        }
+        if let expenseAccountId = finalExpenseAccountId {
+            itemJson["ExpenseAccountRef"] = ["value": expenseAccountId]
+        }
+        if let assetAccountId = finalAssetAccountId {
+            itemJson["AssetAccountRef"] = ["value": assetAccountId]
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: itemJson)
+        
+        let (data, _) = try await makeAuthenticatedRequest(request)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let responseItem = json["Item"] as? [String: Any],
+              let itemId = responseItem["Id"] as? String else {
+            throw QuickBooksError.parseError
+        }
+        
+        print("✅ Created item in QuickBooks with ID: \(itemId)")
+        return itemId
+    }
+    
+    /// Update existing inventory item in QuickBooks
+    private func updateInventoryItem(_ item: InventoryItem, qbItemId: String) async throws {
+        print("   Updating existing item in QuickBooks...")
+        
+        // First, fetch the current item to get SyncToken (required for updates)
+        let currentItem = try await fetchInventoryItem(qbItemId: qbItemId)
+        
+        guard let syncToken = currentItem["SyncToken"] as? String else {
+            throw QuickBooksError.missingSyncToken
+        }
+        
+        let url = URL(string: "\(baseURL)/\(companyId)/item")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        
+        // Build update JSON (must include Id and SyncToken)
+        var itemJson: [String: Any] = [
+            "Id": qbItemId,
+            "SyncToken": syncToken,
+            "sparse": true // Only update fields we provide
+        ]
+        
+        // Update quantity
+        itemJson["QtyOnHand"] = NSDecimalNumber(decimal: item.quantity).doubleValue
+        
+        // Update pricing if available
+        let qbCost = item.quickbooksCost
+        if qbCost > 0 {
+            itemJson["PurchaseCost"] = NSDecimalNumber(decimal: qbCost).doubleValue
+        }
+        
+        if let price = item.quickbooksPrice, price > 0 {
+            itemJson["UnitPrice"] = NSDecimalNumber(decimal: price).doubleValue
+        } else if let price = item.sellingPrice, price > 0 {
+            itemJson["UnitPrice"] = NSDecimalNumber(decimal: price).doubleValue
+        }
+        
+        // Update reorder point
+        if item.minStockLevel > 0 {
+            itemJson["ReorderPoint"] = item.minStockLevel
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: itemJson)
+        
+        let (data, _) = try await makeAuthenticatedRequest(request)
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let _ = json["Item"] as? [String: Any] else {
+            throw QuickBooksError.parseError
+        }
+        
+        print("✅ Updated item in QuickBooks")
+    }
+    
+    /// Fetch a single inventory item from QuickBooks (for getting SyncToken)
+    private func fetchInventoryItem(qbItemId: String) async throws -> [String: Any] {
+        let url = URL(string: "\(baseURL)/\(companyId)/item/\(qbItemId)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")

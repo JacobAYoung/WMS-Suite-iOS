@@ -2,14 +2,19 @@
 //  OrderPickListView.swift
 //  WMS Suite
 //
-//  Created by Jacob Young on 12/19/25.
+//  Enhanced with inventory deduction on pick
 //
 
 import SwiftUI
+import CoreData
 
 struct OrderPickListView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     let sale: Sale
-    @State private var checkedItems: Set<Int32> = []
+    
+    @State private var pickedQuantities: [Int32: Decimal] = [:] // lineItemId: pickedQty
+    @State private var showingPickSheet = false
+    @State private var selectedLineItem: SaleLineItem?
     
     var lineItems: [SaleLineItem] {
         guard let items = sale.lineItems as? Set<SaleLineItem> else { return [] }
@@ -17,7 +22,17 @@ struct OrderPickListView: View {
     }
     
     var allItemsPicked: Bool {
-        return checkedItems.count == lineItems.count
+        return lineItems.allSatisfy { lineItem in
+            let picked = pickedQuantities[lineItem.id] ?? 0
+            return picked >= lineItem.quantity
+        }
+    }
+    
+    var totalPicked: Int {
+        lineItems.filter { lineItem in
+            let picked = pickedQuantities[lineItem.id] ?? 0
+            return picked >= lineItem.quantity
+        }.count
     }
     
     var body: some View {
@@ -37,7 +52,7 @@ struct OrderPickListView: View {
                             .foregroundColor(.green)
                     }
                 } else {
-                    Text("\(checkedItems.count)/\(lineItems.count)")
+                    Text("\(totalPicked)/\(lineItems.count)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -55,9 +70,10 @@ struct OrderPickListView: View {
                             PickListItemRow(
                                 lineItem: lineItem,
                                 item: item,
-                                isChecked: checkedItems.contains(lineItem.id),
-                                onToggle: {
-                                    toggleItem(lineItem.id)
+                                pickedQuantity: pickedQuantities[lineItem.id] ?? 0,
+                                onTap: {
+                                    selectedLineItem = lineItem
+                                    showingPickSheet = true
                                 }
                             )
                         }
@@ -65,13 +81,27 @@ struct OrderPickListView: View {
                 }
             }
         }
-    }
-    
-    private func toggleItem(_ itemId: Int32) {
-        if checkedItems.contains(itemId) {
-            checkedItems.remove(itemId)
-        } else {
-            checkedItems.insert(itemId)
+        .sheet(isPresented: $showingPickSheet) {
+            if let lineItem = selectedLineItem, let item = lineItem.item {
+                NavigationView {
+                    PickItemSheet(lineItem: lineItem, item: item) { pickedQty in
+                        // Update picked quantity
+                        let currentPicked = pickedQuantities[lineItem.id] ?? 0
+                        pickedQuantities[lineItem.id] = currentPicked + pickedQty
+                    }
+                }
+            } else {
+                NavigationView {
+                    VStack {
+                        Text("Error: Could not load item")
+                            .foregroundColor(.red)
+                        Button("Close") {
+                            showingPickSheet = false
+                        }
+                    }
+                    .navigationTitle("Error")
+                }
+            }
         }
     }
 }
@@ -81,16 +111,29 @@ struct OrderPickListView: View {
 struct PickListItemRow: View {
     let lineItem: SaleLineItem
     let item: InventoryItem
-    let isChecked: Bool
-    let onToggle: () -> Void
+    let pickedQuantity: Decimal
+    let onTap: () -> Void
+    
+    var isFullyPicked: Bool {
+        pickedQuantity >= lineItem.quantity
+    }
+    
+    var isPartiallyPicked: Bool {
+        pickedQuantity > 0 && pickedQuantity < lineItem.quantity
+    }
+    
+    var hasStockIssue: Bool {
+        item.quantity < lineItem.quantity
+    }
     
     var body: some View {
-        Button(action: onToggle) {
+        Button(action: onTap) {
             HStack(spacing: 12) {
-                // Checkbox
-                Image(systemName: isChecked ? "checkmark.square.fill" : "square")
+                // Status Icon
+                Image(systemName: statusIcon)
                     .font(.title2)
-                    .foregroundColor(isChecked ? .green : .gray)
+                    .foregroundColor(statusColor)
+                    .frame(width: 30)
                 
                 // Item info
                 VStack(alignment: .leading, spacing: 4) {
@@ -106,11 +149,18 @@ struct PickListItemRow: View {
                         }
                         
                         // Show available stock
-                        if item.quantity < lineItem.quantity {
+                        if hasStockIssue {
                             Label("\(item.quantity) available", systemImage: "exclamationmark.triangle")
                                 .font(.caption)
-                                .foregroundColor(.red)
+                                .foregroundColor(.orange)
                         }
+                    }
+                    
+                    // Pick progress
+                    if isPartiallyPicked {
+                        Text("Picked: \(pickedQuantity) of \(lineItem.quantity)")
+                            .font(.caption)
+                            .foregroundColor(.blue)
                     }
                 }
                 
@@ -121,21 +171,76 @@ struct PickListItemRow: View {
                     Text("×\(lineItem.quantity)")
                         .font(.title3)
                         .bold()
-                        .foregroundColor(isChecked ? .green : .blue)
+                        .foregroundColor(statusColor)
                     
-                    Text("needed")
+                    Text(statusText)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
             .padding()
-            .background(isChecked ? Color.green.opacity(0.1) : Color(uiColor: .secondarySystemBackground))
+            .background(backgroundColor)
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(isChecked ? Color.green : Color.clear, lineWidth: 2)
+                    .stroke(borderColor, lineWidth: 2)
             )
         }
         .buttonStyle(.plain)
     }
+    
+    // MARK: - Computed Properties
+    
+    private var statusIcon: String {
+        if isFullyPicked {
+            return "checkmark.circle.fill"
+        } else if isPartiallyPicked {
+            return "circle.lefthalf.filled"
+        } else {
+            return "circle"
+        }
+    }
+    
+    private var statusColor: Color {
+        if isFullyPicked {
+            return .green
+        } else if isPartiallyPicked {
+            return .blue
+        } else if hasStockIssue {
+            return .orange
+        } else {
+            return .gray
+        }
+    }
+    
+    private var statusText: String {
+        if isFullyPicked {
+            return "picked"
+        } else if isPartiallyPicked {
+            return "partial"
+        } else {
+            return "needed"
+        }
+    }
+    
+    private var backgroundColor: Color {
+        if isFullyPicked {
+            return Color.green.opacity(0.1)
+        } else if isPartiallyPicked {
+            return Color.blue.opacity(0.1)
+        } else {
+            return Color(.secondarySystemBackground)
+        }
+    }
+    
+    private var borderColor: Color {
+        if isFullyPicked {
+            return .green
+        } else if isPartiallyPicked {
+            return .blue
+        } else {
+            return .clear
+        }
+    }
 }
+

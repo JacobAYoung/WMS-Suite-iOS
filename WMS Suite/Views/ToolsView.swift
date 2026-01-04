@@ -14,12 +14,23 @@ struct ToolsView: View {
         NavigationView {
             List {
                 Section {
-                    NavigationLink(destination: BarcodeView(viewModel: viewModel)) {
+                    NavigationLink(destination: BarcodeToolsView(viewModel: viewModel)) {
                         ToolRow(
                             icon: "barcode.viewfinder",
-                            title: "Barcode Scanner",
-                            description: "Scan product barcodes",
+                            title: "Barcode Tools",
+                            description: "Scan & generate barcodes",
                             color: .blue,
+                            isEnabled: true
+                        )
+                    }
+                    
+                    // ⭐ UPDATED: Profit Margin Calculator as NavigationLink
+                    NavigationLink(destination: ProfitMarginCalculatorView(isEmbedded: true)) {
+                        ToolRow(
+                            icon: "function",
+                            title: "Margin Calculator",
+                            description: "Quick profit margin calculator",
+                            color: .green,
                             isEnabled: true
                         )
                     }
@@ -61,6 +72,20 @@ struct ToolsView: View {
                 }
                 
                 Section {
+                    NavigationLink(destination: ReportsView(viewModel: viewModel)) {
+                        ToolRow(
+                            icon: "doc.text.fill",
+                            title: "Reports",
+                            description: "Inventory value, margins, and analytics",
+                            color: .green,
+                            isEnabled: true
+                        )
+                    }
+                } header: {
+                    Text("Reports & Analytics")
+                }
+                
+                Section {
                     NavigationLink(destination: ProductsChartsView()) {
                         ToolRow(
                             icon: "chart.bar.fill",
@@ -81,7 +106,7 @@ struct ToolsView: View {
                         )
                     }
                 } header: {
-                    Text("Analytics & Reports")
+                    Text("Charts & Visualizations")
                 }
             }
             .navigationTitle("Tools & Utilities")

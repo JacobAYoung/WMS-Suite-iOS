@@ -46,9 +46,17 @@ extension Sale {
     }
     
     // Calculated total quantity for this sale
-    var totalQuantity: Int32 {
+    var totalQuantity: Decimal {
         guard let items = lineItems as? Set<SaleLineItem> else { return 0 }
-        return items.reduce(0) { $0 + $1.quantity }
+        return items.reduce(Decimal(0)) { result, lineItem in
+            // Handle both NSDecimalNumber and Decimal types
+            if let decimalNumber = lineItem.quantity as? NSDecimalNumber {
+                return result + decimalNumber.decimalValue
+            } else if let decimal = lineItem.quantity as? Decimal {
+                return result + decimal
+            }
+            return result
+        }
     }
     
     // Calculated total amount (if you add pricing)
@@ -77,11 +85,19 @@ extension Sale {
 
 extension SaleLineItem {
     // Get quantity sold for a specific item
-    static func totalQuantitySold(for item: InventoryItem, context: NSManagedObjectContext) -> Int32 {
+    static func totalQuantitySold(for item: InventoryItem, context: NSManagedObjectContext) -> Decimal {
         let request = NSFetchRequest<SaleLineItem>(entityName: "SaleLineItem")
         request.predicate = NSPredicate(format: "item == %@", item)
         
         guard let lineItems = try? context.fetch(request) else { return 0 }
-        return lineItems.reduce(0) { $0 + $1.quantity }
+        return lineItems.reduce(Decimal(0)) { result, lineItem in
+            // Handle both NSDecimalNumber and Decimal types
+            if let decimalNumber = lineItem.quantity as? NSDecimalNumber {
+                return result + decimalNumber.decimalValue
+            } else if let decimal = lineItem.quantity as? Decimal {
+                return result + decimal
+            }
+            return result
+        }
     }
 }

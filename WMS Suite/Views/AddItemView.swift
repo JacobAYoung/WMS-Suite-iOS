@@ -35,9 +35,9 @@ struct AddItemView: View {
                     TextField("Web SKU (Optional)", text: $webSKU)
                         .textInputAutocapitalization(.characters)
                     TextField("Quantity *", text: $quantity)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                     TextField("Min Stock Level", text: $minStock)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                 }
             }
             .navigationTitle("Add Item")
@@ -63,8 +63,8 @@ struct AddItemView: View {
     }
     
     private func saveItem() {
-        guard let qty = Int32(quantity) else { return }
-        let minStockInt = Int32(minStock) ?? 0
+        guard let qty = Decimal(string: quantity) else { return }
+        let minStockDecimal = Decimal(string: minStock) ?? 0
         
         viewModel.addItem(
             sku: sku,
@@ -73,7 +73,7 @@ struct AddItemView: View {
             upc: upc.isEmpty ? nil : upc,
             webSKU: webSKU.isEmpty ? nil : webSKU,
             quantity: qty,
-            minStockLevel: minStockInt
+            minStockLevel: minStockDecimal
         )
         isPresented = false
     }

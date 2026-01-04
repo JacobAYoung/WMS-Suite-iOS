@@ -2,7 +2,8 @@
 //  QuickBooksSettingsView.swift
 //  WMS Suite
 //
-//  Enhanced with Customer & Invoice Sync buttons + Clear Data button
+//  ✅ CLEANED UP VERSION - Removed credential input, simplified UI
+//  Users just click "Connect" - OAuth credentials are hard-coded in app
 //
 
 import SwiftUI
@@ -11,51 +12,80 @@ import CoreData
 struct QuickBooksSettingsView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var tokenManager = QuickBooksTokenManager.shared
-    
-    // Only these two fields are user-editable
-    @State private var clientId = UserDefaults.standard.string(forKey: "quickbooksClientId") ?? ""
-    @State private var clientSecret = UserDefaults.standard.string(forKey: "quickbooksClientSecret") ?? ""
+    @StateObject private var autoSyncManager = QuickBooksAutoSyncManager.shared
     
     // UI State
-    @State private var showingCredentialsInput = false
     @State private var isConnecting = false
+    @State private var isDisconnecting = false
+    @State private var isClearingData = false
     @State private var errorMessage: String?
+    @State private var errorRecoverySuggestion: String?
     @State private var showingHelp = false
     @State private var showingClearDataAlert = false
+    @State private var showingSuccessAlert = false
+    @State private var successMessage: String?
     
-    // NEW: Sync views
+    // Sync views
     @State private var showingCustomerSync = false
     @State private var showingInvoiceSync = false
+    @State private var showingInventorySync = false
     
     var body: some View {
         Form {
-            // SECTION 1: Connection Status (Always Visible)
+            // Connection Status
             connectionStatusSection
             
-            // SECTION 2: Quick Actions
+            // Quick Actions
             quickActionsSection
             
-            // NEW: SECTION 3: Data Sync (only when connected)
+            // Data Sync (only when connected)
             if tokenManager.isAuthenticated {
                 dataSyncSection
+                autoSyncSection
             }
             
-            // SECTION 4: OAuth Configuration (Collapsible)
-            oauthConfigurationSection
-            
-            // SECTION 5: Environment Toggle
+            // Environment Toggle
             environmentSection
             
-            // SECTION 6: Help & Instructions
+            // Help & Instructions
             helpSection
         }
         .navigationTitle("QuickBooks")
         .navigationBarTitleDisplayMode(.large)
-        .alert("Error", isPresented: .constant(errorMessage != nil)) {
-            Button("OK") { errorMessage = nil }
+        .loading(
+            isConnecting || isDisconnecting || isClearingData || autoSyncManager.isSyncing,
+            message: loadingMessage
+        )
+        .alert("Connection Error", isPresented: .constant(errorMessage != nil && !showingSuccessAlert)) {
+            Button("OK", role: .cancel) {
+                errorMessage = nil
+                errorRecoverySuggestion = nil
+            }
+            if errorRecoverySuggestion != nil {
+                Button("Retry") {
+                    errorMessage = nil
+                    errorRecoverySuggestion = nil
+                    connect()
+                }
+            }
         } message: {
-            if let error = errorMessage {
-                Text(error)
+            VStack(alignment: .leading, spacing: 8) {
+                if let error = errorMessage {
+                    Text(error)
+                }
+                if let suggestion = errorRecoverySuggestion {
+                    Text("\n\(suggestion)")
+                        .font(.caption)
+                }
+            }
+        }
+        .alert("Success!", isPresented: $showingSuccessAlert) {
+            Button("OK", role: .cancel) {
+                successMessage = nil
+            }
+        } message: {
+            if let message = successMessage {
+                Text(message)
             }
         }
         .sheet(isPresented: $showingHelp) {
@@ -69,6 +99,10 @@ struct QuickBooksSettingsView: View {
         }
         .sheet(isPresented: $showingInvoiceSync) {
             QuickBooksInvoiceSyncView()
+                .environment(\.managedObjectContext, viewContext)
+        }
+        .sheet(isPresented: $showingInventorySync) {
+            QuickBooksInventorySyncView()
                 .environment(\.managedObjectContext, viewContext)
         }
     }
@@ -92,9 +126,19 @@ struct QuickBooksSettingsView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     } else {
-                        Text("Connect to QuickBooks to get started")
+                        Text("Tap Connect to link your QuickBooks account")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                    }
+                    
+                    // Show token expiry if connected
+                    if tokenManager.isAuthenticated, let expiry = tokenManager.getTokenExpiryDate() {
+                        let timeUntilExpiry = expiry.timeIntervalSinceNow
+                        if timeUntilExpiry > 0 {
+                            Text("Token expires: \(formatTimeInterval(timeUntilExpiry))")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 
@@ -111,8 +155,17 @@ struct QuickBooksSettingsView: View {
             if tokenManager.isAuthenticated {
                 // Disconnect Button
                 Button(role: .destructive, action: disconnect) {
-                    Label("Disconnect QuickBooks", systemImage: "power")
+                    HStack {
+                        if isDisconnecting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Disconnecting...")
+                        } else {
+                            Label("Disconnect QuickBooks", systemImage: "power")
+                        }
+                    }
                 }
+                .disabled(isDisconnecting)
             } else {
                 // Connect Button
                 Button(action: connect) {
@@ -129,19 +182,13 @@ struct QuickBooksSettingsView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(clientId.isEmpty || clientSecret.isEmpty || isConnecting)
+                .disabled(isConnecting)
                 .listRowBackground(Color.accentColor.opacity(0.1))
-                
-                if clientId.isEmpty || clientSecret.isEmpty {
-                    Text("⚠️ Enter OAuth credentials below to connect")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                }
             }
         }
     }
     
-    // MARK: - ✨ NEW: Data Sync Section
+    // MARK: - Data Sync Section
     
     private var dataSyncSection: some View {
         Section {
@@ -191,24 +238,56 @@ struct QuickBooksSettingsView: View {
                 }
             }
             
-            // ✅ NEW: Clear QuickBooks Data (Destructive)
-            Button(role: .destructive, action: { showingClearDataAlert = true }) {
+            // Sync Inventory
+            Button(action: { showingInventorySync = true }) {
                 HStack {
-                    Image(systemName: "trash.fill")
-                        .foregroundColor(.red)
+                    Image(systemName: "shippingbox.fill")
+                        .foregroundColor(.orange)
                         .frame(width: 30)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Clear QuickBooks Data")
+                        Text("Sync Inventory")
                             .font(.body)
-                        Text("Delete all synced customers & invoices")
+                        Text("Import inventory items from QuickBooks")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
                     
                     Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
+            
+            // Clear QuickBooks Data (Destructive)
+            Button(role: .destructive, action: { showingClearDataAlert = true }) {
+                HStack {
+                    if isClearingData {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                            .frame(width: 30)
+                    } else {
+                        Image(systemName: "trash.fill")
+                            .foregroundColor(.red)
+                            .frame(width: 30)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(isClearingData ? "Clearing..." : "Clear QuickBooks Data")
+                            .font(.body)
+                        if !isClearingData {
+                            Text("Delete all synced customers, invoices & inventory")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+            }
+            .disabled(isClearingData)
         } header: {
             Text("Data Sync")
         } footer: {
@@ -216,59 +295,126 @@ struct QuickBooksSettingsView: View {
         }
         .alert("Clear QuickBooks Data?", isPresented: $showingClearDataAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Clear All Data", role: .destructive) {
+            Button("Clear QB Data", role: .destructive) {
                 clearQuickBooksData()
             }
         } message: {
-            Text("This will delete all customers and invoices synced from QuickBooks. Local customers and orders will not be affected. You can re-sync anytime.")
+            Text("This will delete all customers, invoices, and inventory items synced from QuickBooks.\n\n✅ Local data will NOT be deleted.\n\nYou can re-sync anytime.")
         }
     }
     
-    // MARK: - OAuth Configuration Section
+    // MARK: - Auto Sync Section
     
-    private var oauthConfigurationSection: some View {
+    private var autoSyncSection: some View {
         Section {
-            DisclosureGroup("OAuth Credentials", isExpanded: $showingCredentialsInput) {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Client ID
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Client ID")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        TextField("Enter from Developer Portal", text: $clientId)
-                            .textFieldStyle(.roundedBorder)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
+            // Auto-sync toggle
+            Toggle(isOn: Binding(
+                get: { autoSyncManager.isAutoSyncEnabled },
+                set: { newValue in
+                    autoSyncManager.isAutoSyncEnabled = newValue
+                    if newValue {
+                        Task {
+                            await autoSyncManager.syncIfNeeded()
+                        }
                     }
-                    
-                    // Client Secret
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Client Secret")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        SecureField("Enter from Developer Portal", text: $clientSecret)
-                            .textFieldStyle(.roundedBorder)
-                    }
-                    
-                    // Save Button
-                    Button(action: saveCredentials) {
-                        Text("Save Credentials")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(clientId.isEmpty || clientSecret.isEmpty)
                 }
-                .padding(.vertical, 8)
+            )) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Automatic Sync")
+                        .font(.body)
+                    Text("Sync data automatically in background")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
-        } header: {
-            Text("Configuration")
-        } footer: {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Get your OAuth credentials from the QuickBooks Developer Portal:")
-                
-                Link("Open Developer Portal →", destination: URL(string: "https://developer.intuit.com/app/developer/myapps")!)
+            
+            // Last sync status
+            if let lastSync = autoSyncManager.lastSyncDate {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Last Sync")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        if let timeAgo = autoSyncManager.timeSinceLastSync() {
+                            Text(timeAgo)
+                                .font(.body)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    // Sync status indicator
+                    syncStatusIndicator
+                }
+            } else if autoSyncManager.isAutoSyncEnabled {
+                HStack {
+                    Text("Never synced")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    Button("Sync Now") {
+                        Task {
+                            await autoSyncManager.forceSync()
+                        }
+                    }
                     .font(.caption)
-                    .bold()
+                    .buttonStyle(.bordered)
+                }
+            }
+            
+            // Manual sync button
+            if autoSyncManager.isAutoSyncEnabled {
+                Button(action: {
+                    Task {
+                        await autoSyncManager.forceSync()
+                    }
+                }) {
+                    HStack {
+                        if autoSyncManager.isSyncing {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Syncing...")
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                            Text("Sync Now")
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .disabled(autoSyncManager.isSyncing)
+            }
+            
+        } header: {
+            Text("Automatic Sync")
+        } footer: {
+            if autoSyncManager.isAutoSyncEnabled {
+                if autoSyncManager.isDataStale {
+                    Text("⚠️ Data is stale (> 24 hours old). Sync recommended.")
+                } else {
+                    Text("Data syncs automatically every 4 hours and when app opens. Last sync: \(autoSyncManager.lastSyncStatus.description)")
+                }
+            } else {
+                Text("Enable to keep QuickBooks data up-to-date automatically.")
+            }
+        }
+    }
+    
+    // Sync status indicator
+    private var syncStatusIndicator: some View {
+        Group {
+            switch autoSyncManager.lastSyncStatus {
+            case .idle:
+                Image(systemName: "circle")
+                    .foregroundColor(.secondary)
+            case .syncing:
+                ProgressView()
+                    .scaleEffect(0.8)
+            case .success:
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+            case .failure:
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.orange)
             }
         }
     }
@@ -286,10 +432,15 @@ struct QuickBooksSettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .disabled(tokenManager.isAuthenticated) // Can't change while connected
         } header: {
             Text("Environment")
         } footer: {
-            Text("Enable Sandbox to test with fake data. Disable for production use with real QuickBooks company.")
+            if tokenManager.isAuthenticated {
+                Text("Disconnect to change environment settings.")
+            } else {
+                Text("Enable Sandbox to test with fake data. Disable for production use with real QuickBooks company.")
+            }
         }
     }
     
@@ -301,19 +452,11 @@ struct QuickBooksSettingsView: View {
                 HStack {
                     Image(systemName: "book.fill")
                         .foregroundColor(.blue)
-                    Text("Setup Instructions")
+                    Text("How QuickBooks Integration Works")
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                }
-            }
-            
-            Link(destination: URL(string: "https://developer.intuit.com/app/developer/myapps")!) {
-                HStack {
-                    Image(systemName: "arrow.up.right.square")
-                        .foregroundColor(.blue)
-                    Text("QuickBooks Developer Portal")
                 }
             }
             
@@ -331,91 +474,200 @@ struct QuickBooksSettingsView: View {
     
     // MARK: - Actions
     
-    private func saveCredentials() {
-        tokenManager.setCredentials(clientId: clientId, clientSecret: clientSecret)
-        errorMessage = nil
-        
-        // Show success feedback
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    }
-    
     private func connect() {
-        guard !clientId.isEmpty, !clientSecret.isEmpty else {
-            errorMessage = "Please enter Client ID and Secret first"
-            return
-        }
-        
-        // Save credentials first
-        saveCredentials()
-        
         isConnecting = true
         errorMessage = nil
+        errorRecoverySuggestion = nil
+        
+        print("🔗 User tapped Connect to QuickBooks")
         
         // Get root view controller
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootViewController = windowScene.windows.first?.rootViewController else {
-            errorMessage = "Unable to present login"
+            errorMessage = "Unable to present login screen. Please restart the app."
             isConnecting = false
             return
         }
         
-        // Start OAuth flow
-        tokenManager.startOAuthFlow(presentingViewController: rootViewController)
-        
-        // Reset connecting state
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isConnecting = false
+        // Start OAuth flow with completion handler
+        tokenManager.startOAuthFlow(presentingViewController: rootViewController) { [self] result in
+            DispatchQueue.main.async {
+                self.isConnecting = false
+                
+                switch result {
+                case .success:
+                    // Show success message
+                    self.successMessage = "Successfully connected to QuickBooks!\n\nYou can now sync your customers and invoices."
+                    self.showingSuccessAlert = true
+                    
+                    // Haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                    
+                    print("✅ Connection successful!")
+                    
+                    // Trigger initial auto-sync
+                    if autoSyncManager.isAutoSyncEnabled {
+                        Task {
+                            await autoSyncManager.syncIfNeeded()
+                        }
+                    }
+                    
+                case .failure(let error):
+                    // Don't show error if user cancelled
+                    if case .userCancelled = error {
+                        print("ℹ️ User cancelled - no error shown")
+                        return
+                    }
+                    
+                    // Show user-friendly error message
+                    self.errorMessage = error.localizedDescription
+                    self.errorRecoverySuggestion = error.recoverySuggestion
+                    
+                    // Haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.error)
+                    
+                    print("❌ Connection failed: \(error.localizedDescription)")
+                }
+            }
         }
     }
     
     private func disconnect() {
-        tokenManager.logout()
-        errorMessage = nil
+        isDisconnecting = true
         
-        // Haptic feedback
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.warning)
+        Task {
+            // Add small delay for visual feedback
+            try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+            
+            await MainActor.run {
+                tokenManager.logout()
+                errorMessage = nil
+                
+                // Haptic feedback
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+                
+                isDisconnecting = false
+            }
+        }
     }
     
-    // ✅ NEW: Clear QuickBooks Data Method
     private func clearQuickBooksData() {
-        print("🗑️ Clearing QuickBooks data...")
+        isClearingData = true
         
-        // Delete all QuickBooks customers
-        let customerFetch = NSFetchRequest<Customer>(entityName: "Customer")
-        customerFetch.predicate = NSPredicate(format: "quickbooksCustomerId != nil")
-        
-        do {
-            let qbCustomers = try viewContext.fetch(customerFetch)
-            print("   Deleting \(qbCustomers.count) QuickBooks customers...")
-            qbCustomers.forEach { viewContext.delete($0) }
-        } catch {
-            print("❌ Error fetching QB customers: \(error)")
-        }
-        
-        // Delete all QuickBooks invoices
-        let salesFetch = NSFetchRequest<Sale>(entityName: "Sale")
-        salesFetch.predicate = NSPredicate(format: "source == %@", "quickbooks")
-        
-        do {
-            let qbInvoices = try viewContext.fetch(salesFetch)
-            print("   Deleting \(qbInvoices.count) QuickBooks invoices...")
-            qbInvoices.forEach { viewContext.delete($0) }
-        } catch {
-            print("❌ Error fetching QB invoices: \(error)")
-        }
-        
-        // Save changes
-        do {
-            try viewContext.save()
-            print("✅ QuickBooks data cleared successfully")
+        Task {
+            var customerCount = 0
+            var invoiceCount = 0
+            var inventoryCount = 0
+            var errorOccurred = false
+            var errorDetails = ""
             
-            // Haptic feedback
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-        } catch {
-            print("❌ Error saving context: \(error)")
+            // Perform on background context
+            await Task.detached(priority: .userInitiated) {
+                let backgroundContext = PersistenceController.shared.container.newBackgroundContext()
+                
+                await backgroundContext.perform {
+                    do {
+                        print("🗑️ Clearing QuickBooks data...")
+                        
+                        // Delete all QuickBooks customers (keeps local customers safe)
+                        let customerFetch = NSFetchRequest<Customer>(entityName: "Customer")
+                        customerFetch.predicate = NSPredicate(format: "quickbooksCustomerId != nil")
+                        
+                        let qbCustomers = try backgroundContext.fetch(customerFetch)
+                        customerCount = qbCustomers.count
+                        print("   Deleting \(customerCount) QuickBooks customers...")
+                        qbCustomers.forEach { backgroundContext.delete($0) }
+                        
+                        // Delete all QuickBooks invoices (keeps local orders safe)
+                        let salesFetch = NSFetchRequest<Sale>(entityName: "Sale")
+                        salesFetch.predicate = NSPredicate(format: "source == %@", "quickbooks")
+                        
+                        let qbInvoices = try backgroundContext.fetch(salesFetch)
+                        invoiceCount = qbInvoices.count
+                        print("   Deleting \(invoiceCount) QuickBooks invoices...")
+                        qbInvoices.forEach { backgroundContext.delete($0) }
+                        
+                        // Delete all QuickBooks inventory items (keeps local items safe)
+                        let inventoryFetch = NSFetchRequest<InventoryItem>(entityName: "InventoryItem")
+                        inventoryFetch.predicate = NSPredicate(format: "quickbooksItemId != nil")
+                        
+                        let qbInventory = try backgroundContext.fetch(inventoryFetch)
+                        inventoryCount = qbInventory.count
+                        print("   Deleting \(inventoryCount) QuickBooks inventory items...")
+                        qbInventory.forEach { backgroundContext.delete($0) }
+                        
+                        // Save changes
+                        try backgroundContext.save()
+                        print("✅ QuickBooks data cleared successfully")
+                        
+                    } catch {
+                        print("❌ Error clearing QB data: \(error)")
+                        errorOccurred = true
+                        errorDetails = error.localizedDescription
+                    }
+                }
+            }.value
+            
+            // Update UI on main thread
+            await MainActor.run {
+                isClearingData = false
+                
+                if errorOccurred {
+                    errorMessage = "Failed to clear QuickBooks data"
+                    errorRecoverySuggestion = errorDetails
+                    
+                    // Haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.error)
+                } else {
+                    // Show success message
+                    successMessage = """
+                    Successfully deleted:
+                    • \(customerCount) QuickBooks customer\(customerCount == 1 ? "" : "s")
+                    • \(invoiceCount) invoice\(invoiceCount == 1 ? "" : "s")
+                    • \(inventoryCount) inventory item\(inventoryCount == 1 ? "" : "s")
+                    
+                    Your local data is safe.
+                    """
+                    showingSuccessAlert = true
+                    
+                    // Haptic feedback
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private var loadingMessage: String {
+        if isConnecting {
+            return "Connecting to QuickBooks..."
+        } else if isDisconnecting {
+            return "Disconnecting..."
+        } else if isClearingData {
+            return "Clearing QuickBooks Data..."
+        } else if autoSyncManager.isSyncing {
+            return "Syncing Data..."
+        }
+        return "Loading..."
+    }
+    
+    private func formatTimeInterval(_ interval: TimeInterval) -> String {
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        
+        if hours > 24 {
+            let days = hours / 24
+            return "in \(days) day\(days == 1 ? "" : "s")"
+        } else if hours > 0 {
+            return "in \(hours)h \(minutes)m"
+        } else {
+            return "in \(minutes)m"
         }
     }
 }
@@ -429,85 +681,60 @@ struct QuickBooksHelpView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("🎯 Quick Start")
+                    Text("🎯 How It Works")
                         .font(.title2)
                         .bold()
                     
-                    Text("Follow these steps to connect QuickBooks:")
+                    Text("QuickBooks integration is already configured. Just tap Connect!")
                         .foregroundColor(.secondary)
                 }
                 .padding(.vertical, 8)
             }
             
-            Section("Step 1: Create Developer App") {
+            Section("What Happens When You Connect") {
                 InstructionStep(
                     number: 1,
-                    title: "Go to Developer Portal",
-                    detail: "Visit developer.intuit.com and sign in"
+                    title: "Tap 'Connect to QuickBooks'",
+                    detail: "The QuickBooks login page will open"
                 )
                 InstructionStep(
                     number: 2,
-                    title: "Create an App",
-                    detail: "Click 'My Apps' → 'Create an app' → Select 'QuickBooks Online'"
+                    title: "Sign In",
+                    detail: "Login with your QuickBooks Online account"
                 )
                 InstructionStep(
                     number: 3,
-                    title: "Configure App",
-                    detail: "Name: WMS Suite\nScopes: Accounting"
+                    title: "Authorize",
+                    detail: "Grant WMS Suite access to your data"
                 )
-            }
-            
-            Section("Step 2: Get Credentials") {
                 InstructionStep(
                     number: 4,
-                    title: "Open Keys & Credentials",
-                    detail: "In your app, go to 'Keys & credentials' tab"
-                )
-                InstructionStep(
-                    number: 5,
-                    title: "Copy Client ID",
-                    detail: "Copy your Development Client ID"
-                )
-                InstructionStep(
-                    number: 6,
-                    title: "Copy Client Secret",
-                    detail: "Click 'Show' and copy your Client Secret"
-                )
-                InstructionStep(
-                    number: 7,
-                    title: "Add Redirect URI",
-                    detail: "Add: wmssuite://oauth-callback\nThen click Save"
+                    title: "Sync Data",
+                    detail: "Import customers and invoices"
                 )
             }
             
-            Section("Step 3: Connect in App") {
-                InstructionStep(
-                    number: 8,
-                    title: "Paste Credentials",
-                    detail: "Enter Client ID and Secret in the app"
-                )
-                InstructionStep(
-                    number: 9,
-                    title: "Click 'Connect to QuickBooks'",
-                    detail: "Browser will open for you to login"
-                )
-                InstructionStep(
-                    number: 10,
-                    title: "Authorize",
-                    detail: "Login to QuickBooks and authorize the app"
-                )
+            Section("What Data Is Synced") {
+                Label("Customers with contact information", systemImage: "person.2.fill")
+                    .font(.caption)
+                Label("Invoices with line items", systemImage: "doc.text.fill")
+                    .font(.caption)
+                Label("Inventory items with pricing & quantities", systemImage: "shippingbox.fill")
+                    .font(.caption)
             }
             
             Section("Important Notes") {
                 Label("Use Sandbox mode for testing", systemImage: "exclamationmark.triangle")
                     .font(.caption)
-                Label("Switch to Production when ready to go live", systemImage: "checkmark.circle")
+                Label("Switch to Production for live data", systemImage: "checkmark.circle")
                     .font(.caption)
-                Label("Tokens refresh automatically - no manual intervention needed", systemImage: "arrow.clockwise")
+                Label("Tokens refresh automatically", systemImage: "arrow.clockwise")
+                    .font(.caption)
+                Label("You can disconnect anytime", systemImage: "power")
                     .font(.caption)
             }
         }
-        .navigationTitle("Setup Guide")
+        .navigationTitle("QuickBooks Help")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {

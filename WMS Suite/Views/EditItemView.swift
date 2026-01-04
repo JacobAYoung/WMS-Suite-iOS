@@ -36,9 +36,9 @@ struct EditItemView: View {
                     TextField("Web SKU (Optional)", text: $webSKU)
                         .textInputAutocapitalization(.characters)
                     TextField("Quantity", text: $quantity)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                     TextField("Min Stock Level", text: $minStock)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                 }
                 
                 Section("Metadata") {
@@ -78,13 +78,22 @@ struct EditItemView: View {
         description = item.itemDescription ?? ""
         upc = item.upc ?? ""
         webSKU = item.webSKU ?? ""
-        quantity = "\(item.quantity)"
-        minStock = "\(item.minStockLevel)"
+        
+        // Format decimal quantities nicely
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        
+        let qtyDecimal = (item.quantity as? NSDecimalNumber)?.decimalValue ?? 0
+        quantity = formatter.string(from: NSDecimalNumber(decimal: qtyDecimal)) ?? "\(qtyDecimal)"
+        
+        let minStockDecimal = (item.minStockLevel as? NSDecimalNumber)?.decimalValue ?? 0
+        minStock = formatter.string(from: NSDecimalNumber(decimal: minStockDecimal)) ?? "\(minStockDecimal)"
     }
     
     private func saveChanges() {
-        guard let qty = Int32(quantity) else { return }
-        let minStockInt = Int32(minStock) ?? 0
+        guard let qty = Decimal(string: quantity) else { return }
+        let minStockDecimal = Decimal(string: minStock) ?? 0
         
         viewModel.updateItem(
             item,
@@ -94,7 +103,7 @@ struct EditItemView: View {
             upc: upc.isEmpty ? nil : upc,
             webSKU: webSKU.isEmpty ? nil : webSKU,
             quantity: qty,
-            minStockLevel: minStockInt
+            minStockLevel: minStockDecimal
         )
         isPresented = false
     }

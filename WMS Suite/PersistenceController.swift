@@ -22,8 +22,8 @@ struct PersistenceController {
             newItem.name = "Sample Item \(i)"
             newItem.itemDescription = "This is a sample inventory item"
             newItem.upc = "12345678\(i)"
-            newItem.quantity = Int32.random(in: 0...100)
-            newItem.minStockLevel = 10
+            newItem.quantity = NSDecimalNumber(value: Int32.random(in: 0...100))
+            newItem.minStockLevel = NSDecimalNumber(value: 10)
             newItem.lastUpdated = Date()
         }
         
@@ -39,7 +39,7 @@ struct PersistenceController {
             for j in 0..<numLineItems {
                 let lineItem = SaleLineItem(context: viewContext)
                 // Don't set id - it's auto-generated
-                lineItem.quantity = Int32.random(in: 1...10)
+                lineItem.quantity = NSDecimalNumber(value: Int32.random(in: 1...10))
                 lineItem.sale = sale
                 // Randomly assign to an item (would need to fetch items in real scenario)
             }

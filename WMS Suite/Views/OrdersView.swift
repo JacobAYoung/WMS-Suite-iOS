@@ -82,7 +82,7 @@ struct OrdersView: View {
                 // Source Filter Tabs
                 sourceFilterTabs
                 
-                // Status Filter Tabs
+                // Status Filter Tabs  
                 statusFilterTabs
                 
                 // Orders List with Sections
@@ -125,16 +125,13 @@ struct OrdersView: View {
                 AddSalesView()
                     .environment(\.managedObjectContext, viewContext)
             }
-            .refreshable {
-                await refreshOrdersAsync()
-            }
         }
     }
     
     // MARK: - Source Filter Tabs
     
     private var sourceFilterTabs: some View {
-        // ✅ FIX #1: Disable scrolling with scrollDisabled
+        // ✅ Horizontal ScrollView automatically prevents vertical swipe gestures
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 SourceTabButton(
@@ -173,14 +170,13 @@ struct OrdersView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
-        .scrollDisabled(true) // ✅ FIX #1: Prevent swiping down
         .background(Color(uiColor: .secondarySystemBackground))
     }
     
     // MARK: - Status Filter Tabs
     
     private var statusFilterTabs: some View {
-        // ✅ FIX #1: Disable scrolling with scrollDisabled
+        // ✅ Horizontal ScrollView automatically prevents vertical swipe gestures
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 StatusTabButton(
@@ -206,7 +202,6 @@ struct OrdersView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
-        .scrollDisabled(true) // ✅ FIX #1: Prevent swiping down
         .background(Color(uiColor: .tertiarySystemBackground))
     }
     
@@ -306,6 +301,9 @@ struct OrdersView: View {
         }
         .listStyle(.insetGrouped)
         .id(refreshID)
+        .refreshable {
+            await refreshOrdersAsync()
+        }
     }
     
     // MARK: - Empty State

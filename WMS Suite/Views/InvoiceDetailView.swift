@@ -293,9 +293,9 @@ struct InvoiceLineItemRow: View {
                         .font(.body)
                         .fontWeight(.medium)
                     
-                    let qty = lineItem.quantity
+                    let qtyString = InventoryItem.formatQuantity(lineItem.quantity)
                     let price = lineItem.unitPrice ?? NSDecimalNumber.zero
-                    Text("\(qty) × \(price as NSDecimalNumber, formatter: currencyFormatter)")
+                    Text("\(qtyString) × \(price as NSDecimalNumber, formatter: currencyFormatter)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

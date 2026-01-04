@@ -12,6 +12,7 @@ enum ShopifyError: LocalizedError {
     case invalidResponse
     case httpError(statusCode: Int)
     case parseError
+    case apiError(String)
     
     var errorDescription: String? {
         switch self {
@@ -23,6 +24,8 @@ enum ShopifyError: LocalizedError {
             return "HTTP error: \(code)"
         case .parseError:
             return "Failed to parse Shopify response"
+        case .apiError(let message):
+            return "Shopify API error: \(message)"
         }
     }
 }
