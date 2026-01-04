@@ -55,7 +55,14 @@ struct AddSalesView: View {
                     Text("Items Sold")
                 } footer: {
                     if !lineItems.isEmpty {
-                        Text("Total Items: \(lineItems.reduce(0) { $0 + $1.quantity })")
+                        let totalQty = lineItems.reduce(Decimal(0)) { $0 + $1.quantity }
+                        let formatter = NumberFormatter()
+                        formatter.minimumFractionDigits = 0
+                        formatter.maximumFractionDigits = 2
+                        let totalString = formatter.string(from: NSDecimalNumber(decimal: totalQty)) ?? "\(totalQty)"
+                        Text("Total Items: \(totalString)")
+                    } else {
+                        EmptyView()
                     }
                 }
             }
@@ -102,12 +109,13 @@ struct AddSalesView: View {
         for (index, lineItemInput) in lineItems.enumerated() {
             let lineItem = SaleLineItem(context: viewContext)
             lineItem.id = Int32(Date().timeIntervalSince1970 + Double(index))
-            lineItem.quantity = lineItemInput.quantity
+            lineItem.quantity = NSDecimalNumber(decimal: lineItemInput.quantity)
             lineItem.sale = sale
             lineItem.item = lineItemInput.item
             
             // Optional: Update inventory quantity
-            lineItemInput.item.quantity -= lineItemInput.quantity
+            let currentQty = (lineItemInput.item.quantity as? NSDecimalNumber)?.decimalValue ?? 0
+            lineItemInput.item.quantity = NSDecimalNumber(decimal: currentQty - lineItemInput.quantity)
         }
         
         do {
@@ -123,7 +131,7 @@ struct AddSalesView: View {
 struct LineItemInput: Identifiable {
     let id = UUID()
     let item: InventoryItem
-    var quantity: Int32
+    var quantity: Decimal
 }
 
 // MARK: - Line Item Row
@@ -224,8 +232,11 @@ struct AddLineItemView: View {
                         
                         HStack(spacing: 20) {
                             Button(action: {
-                                if let qty = Int32(quantity), qty > 1 {
-                                    quantity = "\(qty - 1)"
+                                if let qty = Decimal(string: quantity), qty > 1 {
+                                    let formatter = NumberFormatter()
+                                    formatter.minimumFractionDigits = 0
+                                    formatter.maximumFractionDigits = 2
+                                    quantity = formatter.string(from: NSDecimalNumber(decimal: qty - 1)) ?? "\(qty - 1)"
                                 }
                             }) {
                                 Image(systemName: "minus.circle.fill")
@@ -234,14 +245,17 @@ struct AddLineItemView: View {
                             }
                             
                             TextField("Qty", text: $quantity)
-                                .keyboardType(.numberPad)
+                                .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.center)
                                 .font(.title)
                                 .frame(width: 80)
                             
                             Button(action: {
-                                if let qty = Int32(quantity) {
-                                    quantity = "\(qty + 1)"
+                                if let qty = Decimal(string: quantity) {
+                                    let formatter = NumberFormatter()
+                                    formatter.minimumFractionDigits = 0
+                                    formatter.maximumFractionDigits = 2
+                                    quantity = formatter.string(from: NSDecimalNumber(decimal: qty + 1)) ?? "\(qty + 1)"
                                 }
                             }) {
                                 Image(systemName: "plus.circle.fill")
@@ -276,7 +290,7 @@ struct AddLineItemView: View {
     
     private func addLineItem() {
         guard let item = selectedItem,
-              let qty = Int32(quantity) else { return }
+              let qty = Decimal(string: quantity) else { return }
         
         onAdd(LineItemInput(item: item, quantity: qty))
         dismiss()

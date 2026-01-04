@@ -19,7 +19,7 @@ class InventoryViewModel: ObservableObject {
     @Published var showingError = false
     
     private let repository: InventoryRepositoryProtocol
-    private let shopifyService: ShopifyServiceProtocol
+    let shopifyService: ShopifyServiceProtocol // Made public for reorder recommendations
     private let quickbooksService: QuickBooksServiceProtocol
     private let barcodeService: BarcodeServiceProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -123,9 +123,8 @@ class InventoryViewModel: ObservableObject {
                 logs.append("⚠️ Shopify not configured")
             }
             
-            // 3. Sync with QuickBooks (if configured)
-            let qbConfigured = !(UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? "").isEmpty &&
-                              !(UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? "").isEmpty
+            // 3. Sync with QuickBooks (if configured and authenticated)
+            let qbConfigured = QuickBooksTokenManager.shared.isAuthenticated
             
             if qbConfigured {
                 do {
@@ -156,25 +155,32 @@ class InventoryViewModel: ObservableObject {
     
     /// ✅ NEW: Sync QuickBooks data
     private func syncQuickBooksData() async throws {
-        let companyId = UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? ""
-        let accessToken = UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? ""
-        let refreshToken = UserDefaults.standard.string(forKey: "quickbooksRefreshToken") ?? ""
+        // Get QuickBooks credentials from Keychain (more secure)
+        let accessToken = KeychainHelper.shared.getQBAccessToken() ?? ""
+        let refreshToken = KeychainHelper.shared.getQBRefreshToken() ?? ""
+        let companyId = KeychainHelper.shared.getQBRealmId() ?? ""
+        let useSandbox = UserDefaults.standard.bool(forKey: "quickbooksUseSandbox")
         
         guard !companyId.isEmpty && !accessToken.isEmpty else {
             throw AppError.missingCredentials("QuickBooks not configured")
         }
         
-        // Create service and sync
+        // Create service and sync inventory
         let service = QuickBooksService(
             companyId: companyId,
             accessToken: accessToken,
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            useSandbox: useSandbox
         )
         
-        _ = try await service.syncInventory()
+        let context = PersistenceController.shared.container.viewContext
         
-        // Note: syncInventory returns items but we'll fetch fresh from DB
-        // to ensure we have the latest data
+        // Sync inventory items from QuickBooks
+        try await service.syncInventory(context: context) { message in
+            print("📦 QB Inventory Sync: \(message)")
+        }
+        
+        // Note: Items will be fetched fresh from DB after this completes
     }
     
     /// ✅ NEW: Sync Shopify data (extracted from syncWithShopify)
@@ -193,7 +199,7 @@ class InventoryViewModel: ObservableObject {
         )
     }
     
-    func addItem(sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Int32, minStockLevel: Int32, imageUrl: String? = nil) {
+    func addItem(sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Decimal, minStockLevel: Decimal, imageUrl: String? = nil) {
         Task { @MainActor in
             do {
                 let newItem = try await repository.createItem(
@@ -213,7 +219,7 @@ class InventoryViewModel: ObservableObject {
         }
     }
     
-    func updateItem(_ item: InventoryItem, sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Int32, minStockLevel: Int32) {
+    func updateItem(_ item: InventoryItem, sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Decimal, minStockLevel: Decimal) {
         Task { @MainActor in
             do {
                 item.sku = sku
@@ -221,8 +227,8 @@ class InventoryViewModel: ObservableObject {
                 item.itemDescription = description
                 item.upc = upc
                 item.webSKU = webSKU
-                item.quantity = quantity
-                item.minStockLevel = minStockLevel
+                item.quantity = NSDecimalNumber(decimal: quantity)
+                item.minStockLevel = NSDecimalNumber(decimal: minStockLevel)
                 item.lastUpdated = Date()
                 try await repository.updateItem(item)
                 // Note: fetchItems() will be called automatically via Core Data observer
@@ -330,8 +336,11 @@ class InventoryViewModel: ObservableObject {
     
     // MARK: - QuickBooks Integration
     func pushToQuickBooks(item: InventoryItem) async throws {
-        let companyId = UserDefaults.standard.string(forKey: "quickbooksCompanyId") ?? ""
-        let accessToken = UserDefaults.standard.string(forKey: "quickbooksAccessToken") ?? ""
+        // Get credentials from Keychain
+        let accessToken = KeychainHelper.shared.getQBAccessToken() ?? ""
+        let refreshToken = KeychainHelper.shared.getQBRefreshToken() ?? ""
+        let companyId = KeychainHelper.shared.getQBRealmId() ?? ""
+        let useSandbox = UserDefaults.standard.bool(forKey: "quickbooksUseSandbox")
         
         guard !companyId.isEmpty && !accessToken.isEmpty else {
             throw AppError.missingCredentials("QuickBooks credentials not configured")
@@ -340,11 +349,12 @@ class InventoryViewModel: ObservableObject {
         let service = QuickBooksService(
             companyId: companyId,
             accessToken: accessToken,
-            refreshToken: UserDefaults.standard.string(forKey: "quickbooksRefreshToken") ?? ""
+            refreshToken: refreshToken,
+            useSandbox: useSandbox
         )
         
         do {
-            let itemId = try await quickbooksService.pushItem(item)
+            let itemId = try await service.pushInventoryItem(item)
             
             await MainActor.run {
                 item.quickbooksItemId = itemId

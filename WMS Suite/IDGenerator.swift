@@ -18,8 +18,8 @@ class IDGenerator {
     static func hashQuickBooksCustomerID(_ qbID: String) -> Int32 {
         // Create a consistent hash from the QB ID
         let hash = abs(qbID.hashValue)
-        // Add offset to avoid conflicts with local IDs (start at 2,000,000,000)
-        let qbOffset: Int32 = 2_000_000_000
+        // Add offset to avoid conflicts with local IDs (start at 1,800,000,000)
+        let qbOffset: Int32 = 1_800_000_000
         let hashedValue = Int32(hash % Int(Int32.max - qbOffset))
         return qbOffset + hashedValue
     }
@@ -29,6 +29,15 @@ class IDGenerator {
         let hash = abs(qbID.hashValue)
         // Use different offset for invoices (start at 1,500,000,000)
         let qbOffset: Int32 = 1_500_000_000
+        let hashedValue = Int32(hash % Int(Int32.max - qbOffset))
+        return qbOffset + hashedValue
+    }
+    
+    /// Convert QuickBooks Item ID string to a unique Int32
+    static func hashQuickBooksItemID(_ qbID: String) -> Int32 {
+        let hash = abs(qbID.hashValue)
+        // Use different offset for items (start at 1,200,000,000)
+        let qbOffset: Int32 = 1_200_000_000
         let hashedValue = Int32(hash % Int(Int32.max - qbOffset))
         return qbOffset + hashedValue
     }
@@ -133,13 +142,15 @@ class IDGenerator {
 /*
  ID ALLOCATION STRATEGY:
  
- 1 - 999,999,999:           Local records (manually created)
- 1,000,000,000 - 1,499,999,999:  Shopify records
- 1,500,000,000 - 1,999,999,999:  QuickBooks Invoices
- 2,000,000,000 - 2,147,483,647:  QuickBooks Customers
+ 1 - 999,999,999:                Local records (manually created)
+ 1,000,000,000 - 1,199,999,999:  Shopify records
+ 1,200,000,000 - 1,499,999,999:  QuickBooks Items (Inventory)
+ 1,500,000,000 - 1,799,999,999:  QuickBooks Invoices
+ 1,800,000,000 - 2,147,483,647:  QuickBooks Customers
  
  This ensures:
  - No conflicts between different sources
  - Same QB/Shopify ID always maps to same Int32
  - Local records get sequential IDs starting at 1
+ - All offsets fit within Int32.max (2,147,483,647)
  */

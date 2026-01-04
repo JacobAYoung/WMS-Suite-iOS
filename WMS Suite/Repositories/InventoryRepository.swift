@@ -23,7 +23,7 @@ class InventoryRepository: InventoryRepositoryProtocol {
         }
     }
     
-    func createItem(sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Int32, minStockLevel: Int32, imageUrl: String?) async throws -> InventoryItem {
+    func createItem(sku: String, name: String, description: String?, upc: String?, webSKU: String?, quantity: Decimal, minStockLevel: Decimal, imageUrl: String?) async throws -> InventoryItem {
         return try await context.perform {
             let item = InventoryItem(context: self.context)
             item.id = Int32(Date().timeIntervalSince1970)
@@ -32,8 +32,8 @@ class InventoryRepository: InventoryRepositoryProtocol {
             item.itemDescription = description
             item.upc = upc
             item.webSKU = webSKU
-            item.quantity = quantity
-            item.minStockLevel = minStockLevel
+            item.quantity = NSDecimalNumber(decimal: quantity)
+            item.minStockLevel = NSDecimalNumber(decimal: minStockLevel)
             item.imageUrl = imageUrl
             item.lastUpdated = Date()
             

@@ -11,17 +11,31 @@ import SwiftUI
 struct ActiveFiltersBar: View {
     @Binding var selectedFilter: InventoryFilterOption
     @Binding var selectedSort: InventorySortOption
+    var selectedTag: ProductTag?
     let itemCount: Int
     
     var body: some View {
         HStack(spacing: 12) {
             if selectedFilter != .all {
-                FilterPill(
-                    icon: selectedFilter.icon,
-                    text: selectedFilter.rawValue,
-                    color: .blue,
-                    onRemove: { selectedFilter = .all }
-                )
+                if selectedFilter == .byTag, let tag = selectedTag {
+                    // Show tag badge for tag filter
+                    HStack(spacing: 4) {
+                        TagBadge(tag: tag)
+                        Button(action: { selectedFilter = .all }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                } else {
+                    // Regular filter pill
+                    FilterPill(
+                        icon: selectedFilter.icon,
+                        text: selectedFilter.rawValue,
+                        color: .blue,
+                        onRemove: { selectedFilter = .all }
+                    )
+                }
             }
             
             if selectedSort != .nameAZ {

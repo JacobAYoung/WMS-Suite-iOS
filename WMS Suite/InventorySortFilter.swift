@@ -97,6 +97,7 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
     case needsSync = "Needs Sync"
     case hasImage = "Has Image"
     case noImage = "No Image"
+    case byTag = "By Tag"
     
     var id: String { rawValue }
     
@@ -119,11 +120,13 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
         case .hasImage:
             return "photo"
         case .noImage:
-            return "photo.badge.plus" 
+            return "photo.badge.plus"
+        case .byTag:
+            return "tag"
         }
     }
     
-    func filter(_ items: [InventoryItem]) -> [InventoryItem] {
+    func filter(_ items: [InventoryItem], selectedTag: ProductTag? = nil) -> [InventoryItem] {
         switch self {
         case .all:
             return items
@@ -143,6 +146,11 @@ enum InventoryFilterOption: String, CaseIterable, Identifiable {
             return items.filter { $0.imageUrl != nil && !($0.imageUrl?.isEmpty ?? true) }
         case .noImage:
             return items.filter { $0.imageUrl == nil || ($0.imageUrl?.isEmpty ?? true) }
+        case .byTag:
+            guard let selectedTag = selectedTag else { return items }
+            return items.filter { item in
+                item.tags.contains(where: { $0.id == selectedTag.id })
+            }
         }
     }
 }

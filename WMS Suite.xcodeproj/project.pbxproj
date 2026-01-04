@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C81403B92F0A04CB00D76989 /* ARCHITECTURE_IMPROVEMENTS.md in Resources */ = {isa = PBXBuildFile; fileRef = C81403B82F0A04CB00D76989 /* ARCHITECTURE_IMPROVEMENTS.md */; };
+		C81403BB2F0A050900D76989 /* ReportConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = C81403BA2F0A050900D76989 /* ReportConfig.swift */; };
+		C81403BD2F0A056A00D76989 /* REFACTORING_REPORTS_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C81403BC2F0A056A00D76989 /* REFACTORING_REPORTS_SUMMARY.md */; };
+		C81403BF2F0A097400D76989 /* DECIMAL_MIGRATION_INSTRUCTIONS.md in Resources */ = {isa = PBXBuildFile; fileRef = C81403BE2F0A097400D76989 /* DECIMAL_MIGRATION_INSTRUCTIONS.md */; };
 		C822587A2EE9057E0028BF7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C82258732EE9057E0028BF7B /* Assets.xcassets */; };
 		C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82258742EE9057E0028BF7B /* ContentView.swift */; };
 		C822587C2EE9057E0028BF7B /* WMS_Suite.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */; };
@@ -21,6 +25,63 @@
 		C87700BD2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */; };
 		C87700C12EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */; };
 		C87700D72F02F1DD00E5E58A /* IDGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C87700D62F02F1DD00E5E58A /* IDGenerator.swift */; };
+		C89081CC2F0386C7004BD9BE /* ReportRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081CB2F0386C6004BD9BE /* ReportRow.swift */; };
+		C89081CE2F0386CD004BD9BE /* ReportPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081CD2F0386CD004BD9BE /* ReportPlaceholder.swift */; };
+		C89081D02F0386D3004BD9BE /* ReportSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081CF2F0386D3004BD9BE /* ReportSummaryCard.swift */; };
+		C89081D22F0386D9004BD9BE /* MetricRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081D12F0386D9004BD9BE /* MetricRow.swift */; };
+		C89081D42F0386FB004BD9BE /* InventoryValueReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081D32F0386FB004BD9BE /* InventoryValueReportView.swift */; };
+		C89081D62F038833004BD9BE /* DuplicateIssue.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081D52F038833004BD9BE /* DuplicateIssue.swift */; };
+		C89081D82F03885A004BD9BE /* DuplicateDetectionReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081D72F03885A004BD9BE /* DuplicateDetectionReportView.swift */; };
+		C89081DA2F038880004BD9BE /* ReorderRecommendation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081D92F038880004BD9BE /* ReorderRecommendation.swift */; };
+		C89081DC2F0388AB004BD9BE /* ReorderRecommendationsReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081DB2F0388AB004BD9BE /* ReorderRecommendationsReportView.swift */; };
+		C89081DE2F038939004BD9BE /* IMPLEMENTATION_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081DD2F038939004BD9BE /* IMPLEMENTATION_SUMMARY.md */; };
+		C89081E02F041884004BD9BE /* ProfitMarginAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081DF2F041884004BD9BE /* ProfitMarginAnalysis.swift */; };
+		C89081E22F0418B4004BD9BE /* ProfitMarginReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081E12F0418B4004BD9BE /* ProfitMarginReportView.swift */; };
+		C89081E42F0418D2004BD9BE /* ProfitMarginCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081E32F0418D2004BD9BE /* ProfitMarginCalculatorView.swift */; };
+		C89081E62F04192D004BD9BE /* PROFIT_MARGIN_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081E52F04192D004BD9BE /* PROFIT_MARGIN_SUMMARY.md */; };
+		C89081E82F041AD6004BD9BE /* TESTING_CHECKLIST.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081E72F041AD6004BD9BE /* TESTING_CHECKLIST.md */; };
+		C89081EA2F041BA4004BD9BE /* BUG_FIXES_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081E92F041BA4004BD9BE /* BUG_FIXES_SUMMARY.md */; };
+		C89081EC2F041F9D004BD9BE /* PERFORMANCE_AUDIT.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081EB2F041F9D004BD9BE /* PERFORMANCE_AUDIT.md */; };
+		C89081EE2F0424DD004BD9BE /* SESSION_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081ED2F0424DD004BD9BE /* SESSION_SUMMARY.md */; };
+		C89081F02F071269004BD9BE /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89081EF2F071269004BD9BE /* KeychainHelper.swift */; };
+		C89081F22F071356004BD9BE /* INFO_PLIST_SETUP.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081F12F071356004BD9BE /* INFO_PLIST_SETUP.md */; };
+		C89081F42F0713A5004BD9BE /* QUICKBOOKS_CLEANUP_SUMMARY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081F32F0713A5004BD9BE /* QUICKBOOKS_CLEANUP_SUMMARY.md */; };
+		C89081F62F071425004BD9BE /* WMS-Suite-Info-UPDATED.plist in Resources */ = {isa = PBXBuildFile; fileRef = C89081F52F071425004BD9BE /* WMS-Suite-Info-UPDATED.plist */; };
+		C89081F82F0714BB004BD9BE /* QUICKBOOKS_CREDENTIALS_REFERENCE.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081F72F0714BB004BD9BE /* QUICKBOOKS_CREDENTIALS_REFERENCE.md */; };
+		C89081FA2F071605004BD9BE /* PERFORMANCE_FIX_DOUBLE_LOADING.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081F92F071605004BD9BE /* PERFORMANCE_FIX_DOUBLE_LOADING.md */; };
+		C89081FC2F071698004BD9BE /* QUICKBOOKS_PHASE2_ERROR_HANDLING.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081FB2F071698004BD9BE /* QUICKBOOKS_PHASE2_ERROR_HANDLING.md */; };
+		C89081FE2F07184B004BD9BE /* QUICKBOOKS_PHASE3_APP_STORE_PREP.md in Resources */ = {isa = PBXBuildFile; fileRef = C89081FD2F07184B004BD9BE /* QUICKBOOKS_PHASE3_APP_STORE_PREP.md */; };
+		C89082002F071A07004BD9BE /* AzureFunction-QuickBooksTokenExchange.js in Resources */ = {isa = PBXBuildFile; fileRef = C89081FF2F071A07004BD9BE /* AzureFunction-QuickBooksTokenExchange.js */; };
+		C89082022F071A33004BD9BE /* AZURE_FUNCTION_DEPLOYMENT_GUIDE.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082012F071A33004BD9BE /* AZURE_FUNCTION_DEPLOYMENT_GUIDE.md */; };
+		C89082042F0721DD004BD9BE /* AZURE_INTEGRATION_COMPLETE.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082032F0721DD004BD9BE /* AZURE_INTEGRATION_COMPLETE.md */; };
+		C89082062F072284004BD9BE /* AzureFunction-QuickBooksTokenRefresh.js in Resources */ = {isa = PBXBuildFile; fileRef = C89082052F072284004BD9BE /* AzureFunction-QuickBooksTokenRefresh.js */; };
+		C89082082F0722A5004BD9BE /* DEPLOY_REFRESH_FUNCTION.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082072F0722A5004BD9BE /* DEPLOY_REFRESH_FUNCTION.md */; };
+		C890820A2F0741F0004BD9BE /* QUICKBOOKS_SETUP_CHECKLIST.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082092F0741F0004BD9BE /* QUICKBOOKS_SETUP_CHECKLIST.md */; };
+		C89082102F0742A2004BD9BE /* QUICKBOOKS_OAUTH_OVERVIEW.md in Resources */ = {isa = PBXBuildFile; fileRef = C890820F2F0742A2004BD9BE /* QUICKBOOKS_OAUTH_OVERVIEW.md */; };
+		C89082122F07445D004BD9BE /* QUICKBOOKS_DATA_SAFETY.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082112F07445D004BD9BE /* QUICKBOOKS_DATA_SAFETY.md */; };
+		C89082142F0763D1004BD9BE /* QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082132F0763D1004BD9BE /* QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md */; };
+		C89082162F077114004BD9BE /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082152F077114004BD9BE /* LoadingView.swift */; };
+		C89082182F077154004BD9BE /* AsyncBestPractices.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082172F077154004BD9BE /* AsyncBestPractices.swift */; };
+		C890821A2F0772FB004BD9BE /* QuickBooksAutoSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082192F0772FB004BD9BE /* QuickBooksAutoSyncManager.swift */; };
+		C890821C2F0774EB004BD9BE /* APP_ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = C890821B2F0774EB004BD9BE /* APP_ARCHITECTURE.md */; };
+		C89082232F098214004BD9BE /* ASYNC_ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082222F098214004BD9BE /* ASYNC_ARCHITECTURE.md */; };
+		C89082252F09833C004BD9BE /* QuickBooksInventorySyncView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082242F09833C004BD9BE /* QuickBooksInventorySyncView.swift */; };
+		C89082272F098372004BD9BE /* QUICKBOOKS_INVENTORY_SYNC_UI.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082262F098372004BD9BE /* QUICKBOOKS_INVENTORY_SYNC_UI.md */; };
+		C89082292F098457004BD9BE /* DUPLICATE_ITEMS_FIX.md in Resources */ = {isa = PBXBuildFile; fileRef = C89082282F098457004BD9BE /* DUPLICATE_ITEMS_FIX.md */; };
+		C890822B2F09AF3F004BD9BE /* ARCHITECTURE.md in Resources */ = {isa = PBXBuildFile; fileRef = C890822A2F09AF3F004BD9BE /* ARCHITECTURE.md */; };
+		C890822F2F09B60F004BD9BE /* QuickScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C890822E2F09B60F004BD9BE /* QuickScanView.swift */; };
+		C89082312F09B641004BD9BE /* PutAwayInventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082302F09B641004BD9BE /* PutAwayInventoryView.swift */; };
+		C89082332F09BB52004BD9BE /* TakeOutInventoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082322F09BB52004BD9BE /* TakeOutInventoryView.swift */; };
+		C89082372F09BBB1004BD9BE /* QuickActionsBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082362F09BBB1004BD9BE /* QuickActionsBar.swift */; };
+		C89082392F09BBD7004BD9BE /* InventoryView_Enhanced.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082382F09BBD7004BD9BE /* InventoryView_Enhanced.swift */; };
+		C890823D2F09BC89004BD9BE /* ARCHITECTURE_DIAGRAMS.md in Resources */ = {isa = PBXBuildFile; fileRef = C890823C2F09BC89004BD9BE /* ARCHITECTURE_DIAGRAMS.md */; };
+		C89082472F09C2E4004BD9BE /* PickItemSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082462F09C2E4004BD9BE /* PickItemSheet.swift */; };
+		C89082492F09C4D5004BD9BE /* BarcodeToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89082482F09C4D5004BD9BE /* BarcodeToolsView.swift */; };
+		C890824B2F09CB15004BD9BE /* CODING_STANDARDS.md in Resources */ = {isa = PBXBuildFile; fileRef = C890824A2F09CB15004BD9BE /* CODING_STANDARDS.md */; };
+		C890824D2F09D556004BD9BE /* OrientationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C890824C2F09D556004BD9BE /* OrientationManager.swift */; };
+		C890824F2F09D575004BD9BE /* IPAD_ORIENTATION_SETUP.md in Resources */ = {isa = PBXBuildFile; fileRef = C890824E2F09D575004BD9BE /* IPAD_ORIENTATION_SETUP.md */; };
+		C898E16C2F03660D005FEE27 /* ProductNotesTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C898E16B2F03660D005FEE27 /* ProductNotesTagsView.swift */; };
+		C898E16E2F0368A6005FEE27 /* ReportsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C898E16D2F0368A6005FEE27 /* ReportsView.swift */; };
 		C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48262EEE288C0088DD7D /* AddSalesView.swift */; };
 		C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */; };
 		C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */; };
@@ -94,6 +155,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C81403B82F0A04CB00D76989 /* ARCHITECTURE_IMPROVEMENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE_IMPROVEMENTS.md; sourceTree = "<group>"; };
+		C81403BA2F0A050900D76989 /* ReportConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportConfig.swift; sourceTree = "<group>"; };
+		C81403BC2F0A056A00D76989 /* REFACTORING_REPORTS_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = REFACTORING_REPORTS_SUMMARY.md; sourceTree = "<group>"; };
+		C81403BE2F0A097400D76989 /* DECIMAL_MIGRATION_INSTRUCTIONS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DECIMAL_MIGRATION_INSTRUCTIONS.md; sourceTree = "<group>"; };
+		C81403C02F0A214C00D76989 /* InventoryItem+Display.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InventoryItem+Display.swift"; sourceTree = "<group>"; };
 		C82258732EE9057E0028BF7B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C82258742EE9057E0028BF7B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WMS_SuiteApp.swift; sourceTree = "<group>"; };
@@ -108,6 +174,66 @@
 		C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksInvoiceSyncView.swift; sourceTree = "<group>"; };
 		C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksCustomerSyncView.swift; sourceTree = "<group>"; };
 		C87700D62F02F1DD00E5E58A /* IDGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IDGenerator.swift; sourceTree = "<group>"; };
+		C89081CB2F0386C6004BD9BE /* ReportRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportRow.swift; sourceTree = "<group>"; };
+		C89081CD2F0386CD004BD9BE /* ReportPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportPlaceholder.swift; sourceTree = "<group>"; };
+		C89081CF2F0386D3004BD9BE /* ReportSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportSummaryCard.swift; sourceTree = "<group>"; };
+		C89081D12F0386D9004BD9BE /* MetricRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricRow.swift; sourceTree = "<group>"; };
+		C89081D32F0386FB004BD9BE /* InventoryValueReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryValueReportView.swift; sourceTree = "<group>"; };
+		C89081D52F038833004BD9BE /* DuplicateIssue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateIssue.swift; sourceTree = "<group>"; };
+		C89081D72F03885A004BD9BE /* DuplicateDetectionReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateDetectionReportView.swift; sourceTree = "<group>"; };
+		C89081D92F038880004BD9BE /* ReorderRecommendation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderRecommendation.swift; sourceTree = "<group>"; };
+		C89081DB2F0388AB004BD9BE /* ReorderRecommendationsReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReorderRecommendationsReportView.swift; sourceTree = "<group>"; };
+		C89081DD2F038939004BD9BE /* IMPLEMENTATION_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = IMPLEMENTATION_SUMMARY.md; sourceTree = "<group>"; };
+		C89081DF2F041884004BD9BE /* ProfitMarginAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfitMarginAnalysis.swift; sourceTree = "<group>"; };
+		C89081E12F0418B4004BD9BE /* ProfitMarginReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfitMarginReportView.swift; sourceTree = "<group>"; };
+		C89081E32F0418D2004BD9BE /* ProfitMarginCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfitMarginCalculatorView.swift; sourceTree = "<group>"; };
+		C89081E52F04192D004BD9BE /* PROFIT_MARGIN_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PROFIT_MARGIN_SUMMARY.md; sourceTree = "<group>"; };
+		C89081E72F041AD6004BD9BE /* TESTING_CHECKLIST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TESTING_CHECKLIST.md; sourceTree = "<group>"; };
+		C89081E92F041BA4004BD9BE /* BUG_FIXES_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUG_FIXES_SUMMARY.md; sourceTree = "<group>"; };
+		C89081EB2F041F9D004BD9BE /* PERFORMANCE_AUDIT.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PERFORMANCE_AUDIT.md; sourceTree = "<group>"; };
+		C89081ED2F0424DD004BD9BE /* SESSION_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SESSION_SUMMARY.md; sourceTree = "<group>"; };
+		C89081EF2F071269004BD9BE /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		C89081F12F071356004BD9BE /* INFO_PLIST_SETUP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INFO_PLIST_SETUP.md; sourceTree = "<group>"; };
+		C89081F32F0713A5004BD9BE /* QUICKBOOKS_CLEANUP_SUMMARY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_CLEANUP_SUMMARY.md; sourceTree = "<group>"; };
+		C89081F52F071425004BD9BE /* WMS-Suite-Info-UPDATED.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WMS-Suite-Info-UPDATED.plist"; sourceTree = "<group>"; };
+		C89081F72F0714BB004BD9BE /* QUICKBOOKS_CREDENTIALS_REFERENCE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_CREDENTIALS_REFERENCE.md; sourceTree = "<group>"; };
+		C89081F92F071605004BD9BE /* PERFORMANCE_FIX_DOUBLE_LOADING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PERFORMANCE_FIX_DOUBLE_LOADING.md; sourceTree = "<group>"; };
+		C89081FB2F071698004BD9BE /* QUICKBOOKS_PHASE2_ERROR_HANDLING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_PHASE2_ERROR_HANDLING.md; sourceTree = "<group>"; };
+		C89081FD2F07184B004BD9BE /* QUICKBOOKS_PHASE3_APP_STORE_PREP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_PHASE3_APP_STORE_PREP.md; sourceTree = "<group>"; };
+		C89081FF2F071A07004BD9BE /* AzureFunction-QuickBooksTokenExchange.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "AzureFunction-QuickBooksTokenExchange.js"; sourceTree = "<group>"; };
+		C89082012F071A33004BD9BE /* AZURE_FUNCTION_DEPLOYMENT_GUIDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AZURE_FUNCTION_DEPLOYMENT_GUIDE.md; sourceTree = "<group>"; };
+		C89082032F0721DD004BD9BE /* AZURE_INTEGRATION_COMPLETE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AZURE_INTEGRATION_COMPLETE.md; sourceTree = "<group>"; };
+		C89082052F072284004BD9BE /* AzureFunction-QuickBooksTokenRefresh.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "AzureFunction-QuickBooksTokenRefresh.js"; sourceTree = "<group>"; };
+		C89082072F0722A5004BD9BE /* DEPLOY_REFRESH_FUNCTION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DEPLOY_REFRESH_FUNCTION.md; sourceTree = "<group>"; };
+		C89082092F0741F0004BD9BE /* QUICKBOOKS_SETUP_CHECKLIST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_SETUP_CHECKLIST.md; sourceTree = "<group>"; };
+		C890820F2F0742A2004BD9BE /* QUICKBOOKS_OAUTH_OVERVIEW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_OAUTH_OVERVIEW.md; sourceTree = "<group>"; };
+		C89082112F07445D004BD9BE /* QUICKBOOKS_DATA_SAFETY.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_DATA_SAFETY.md; sourceTree = "<group>"; };
+		C89082132F0763D1004BD9BE /* QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md; sourceTree = "<group>"; };
+		C89082152F077114004BD9BE /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		C89082172F077154004BD9BE /* AsyncBestPractices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncBestPractices.swift; sourceTree = "<group>"; };
+		C89082192F0772FB004BD9BE /* QuickBooksAutoSyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksAutoSyncManager.swift; sourceTree = "<group>"; };
+		C890821B2F0774EB004BD9BE /* APP_ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = APP_ARCHITECTURE.md; sourceTree = "<group>"; };
+		C890821D2F097C49004BD9BE /* QUICKBOOKS_INVENTORY_INTEGRATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_INVENTORY_INTEGRATION.md; sourceTree = "<group>"; };
+		C89082202F098042004BD9BE /* QUICKBOOKS_INVENTORY_COMPLETE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_INVENTORY_COMPLETE.md; sourceTree = "<group>"; };
+		C89082212F0980EB004BD9BE /* BUILD_ERRORS_FIXED.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BUILD_ERRORS_FIXED.md; sourceTree = "<group>"; };
+		C89082222F098214004BD9BE /* ASYNC_ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ASYNC_ARCHITECTURE.md; sourceTree = "<group>"; };
+		C89082242F09833C004BD9BE /* QuickBooksInventorySyncView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickBooksInventorySyncView.swift; sourceTree = "<group>"; };
+		C89082262F098372004BD9BE /* QUICKBOOKS_INVENTORY_SYNC_UI.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = QUICKBOOKS_INVENTORY_SYNC_UI.md; sourceTree = "<group>"; };
+		C89082282F098457004BD9BE /* DUPLICATE_ITEMS_FIX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = DUPLICATE_ITEMS_FIX.md; sourceTree = "<group>"; };
+		C890822A2F09AF3F004BD9BE /* ARCHITECTURE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE.md; sourceTree = "<group>"; };
+		C890822E2F09B60F004BD9BE /* QuickScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickScanView.swift; sourceTree = "<group>"; };
+		C89082302F09B641004BD9BE /* PutAwayInventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PutAwayInventoryView.swift; sourceTree = "<group>"; };
+		C89082322F09BB52004BD9BE /* TakeOutInventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakeOutInventoryView.swift; sourceTree = "<group>"; };
+		C89082362F09BBB1004BD9BE /* QuickActionsBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionsBar.swift; sourceTree = "<group>"; };
+		C89082382F09BBD7004BD9BE /* InventoryView_Enhanced.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView_Enhanced.swift; sourceTree = "<group>"; };
+		C890823C2F09BC89004BD9BE /* ARCHITECTURE_DIAGRAMS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ARCHITECTURE_DIAGRAMS.md; sourceTree = "<group>"; };
+		C89082462F09C2E4004BD9BE /* PickItemSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickItemSheet.swift; sourceTree = "<group>"; };
+		C89082482F09C4D5004BD9BE /* BarcodeToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeToolsView.swift; sourceTree = "<group>"; };
+		C890824A2F09CB15004BD9BE /* CODING_STANDARDS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CODING_STANDARDS.md; sourceTree = "<group>"; };
+		C890824C2F09D556004BD9BE /* OrientationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationManager.swift; sourceTree = "<group>"; };
+		C890824E2F09D575004BD9BE /* IPAD_ORIENTATION_SETUP.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = IPAD_ORIENTATION_SETUP.md; sourceTree = "<group>"; };
+		C898E16B2F03660D005FEE27 /* ProductNotesTagsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductNotesTagsView.swift; sourceTree = "<group>"; };
+		C898E16D2F0368A6005FEE27 /* ReportsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportsView.swift; sourceTree = "<group>"; };
 		C89984972EE4CFE500B6661C /* WMS Suite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WMS Suite.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8AC48262EEE288C0088DD7D /* AddSalesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSalesView.swift; sourceTree = "<group>"; };
 		C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalesHistoryView.swift; sourceTree = "<group>"; };
@@ -204,27 +330,42 @@
 		C82258782EE9057E0028BF7B /* WMS Suite */ = {
 			isa = PBXGroup;
 			children = (
-				C87700D62F02F1DD00E5E58A /* IDGenerator.swift */,
 				C8CB35102EF4F65300C61FCE /* ActiveFiltersBar.swift */,
 				C8FBB52F2EEE0DDF001FC318 /* ActivityViewController.swift */,
 				C8CB355B2EF7867700C61FCE /* AdaptiveContainer.swift */,
 				C8CB34F92EEF6CD300C61FCE /* AppIcon.svg */,
 				C82258732EE9057E0028BF7B /* Assets.xcassets */,
+				C89082172F077154004BD9BE /* AsyncBestPractices.swift */,
+				C89082012F071A33004BD9BE /* AZURE_FUNCTION_DEPLOYMENT_GUIDE.md */,
+				C89082032F0721DD004BD9BE /* AZURE_INTEGRATION_COMPLETE.md */,
+				C89081FF2F071A07004BD9BE /* AzureFunction-QuickBooksTokenExchange.js */,
+				C89082052F072284004BD9BE /* AzureFunction-QuickBooksTokenRefresh.js */,
 				C8FBB51F2EEE0D8C001FC318 /* BarcodeData.swift */,
 				C8FBB5132EEE0D3F001FC318 /* BarcodeServiceProtocol.swift */,
 				C8FBB5372EEE11F2001FC318 /* CameraManager.swift */,
 				C8FBB5332EEE0DF4001FC318 /* CameraViewWrapper.swift */,
 				C82258742EE9057E0028BF7B /* ContentView.swift */,
-				C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */,
+				C89082072F0722A5004BD9BE /* DEPLOY_REFRESH_FUNCTION.md */,
 				C8CB35182EF5052200C61FCE /* Enums */,
 				C8CB34F82EEF6B3100C61FCE /* Extensions */,
 				C8CB350C2EF4F62A00C61FCE /* FilterButton.swift */,
 				C8FBB51D2EEE0D80001FC318 /* ForecastResult.swift */,
+				C87700D62F02F1DD00E5E58A /* IDGenerator.swift */,
+				C89081F12F071356004BD9BE /* INFO_PLIST_SETUP.md */,
 				C8FBB50F2EEE0D22001FC318 /* InventoryRepositoryProtocol.swift */,
 				C8FBB5252EEE0DB7001FC318 /* InventoryRow.swift */,
 				C8CB350A2EF4F42C00C61FCE /* InventorySortFilter.swift */,
+				C89081EF2F071269004BD9BE /* KeychainHelper.swift */,
+				C89082152F077114004BD9BE /* LoadingView.swift */,
 				C8CB34F22EEF6AF400C61FCE /* Models */,
+				C89081F92F071605004BD9BE /* PERFORMANCE_FIX_DOUBLE_LOADING.md */,
 				C8FBB5072EEE0CDA001FC318 /* PersistenceController.swift */,
+				C89081F32F0713A5004BD9BE /* QUICKBOOKS_CLEANUP_SUMMARY.md */,
+				C89081F72F0714BB004BD9BE /* QUICKBOOKS_CREDENTIALS_REFERENCE.md */,
+				C890820F2F0742A2004BD9BE /* QUICKBOOKS_OAUTH_OVERVIEW.md */,
+				C89081FB2F071698004BD9BE /* QUICKBOOKS_PHASE2_ERROR_HANDLING.md */,
+				C89081FD2F07184B004BD9BE /* QUICKBOOKS_PHASE3_APP_STORE_PREP.md */,
+				C89082092F0741F0004BD9BE /* QUICKBOOKS_SETUP_CHECKLIST.md */,
 				C8CB34DC2EEF231F00C61FCE /* QuickBooksServiceProtocol.swift */,
 				C8CB35042EF4BB0200C61FCE /* QuickBooksTokenManager.swift */,
 				C8CB34F62EEF6B1D00C61FCE /* Repositories */,
@@ -239,6 +380,7 @@
 				C82258762EE9057E0028BF7B /* WMS_Suite.xcdatamodeld */,
 				C82258772EE9057E0028BF7B /* WMS_SuiteApp.swift */,
 				C8FBB53D2EEE1F2A001FC318 /* WMS-Suite-Info.plist */,
+				C89081F52F071425004BD9BE /* WMS-Suite-Info-UPDATED.plist */,
 			);
 			path = "WMS Suite";
 			sourceTree = "<group>";
@@ -248,6 +390,10 @@
 			children = (
 				C82258782EE9057E0028BF7B /* WMS Suite */,
 				C89984982EE4CFE500B6661C /* Products */,
+				C890821D2F097C49004BD9BE /* QUICKBOOKS_INVENTORY_INTEGRATION.md */,
+				C89082202F098042004BD9BE /* QUICKBOOKS_INVENTORY_COMPLETE.md */,
+				C89082212F0980EB004BD9BE /* BUILD_ERRORS_FIXED.md */,
+				C81403C02F0A214C00D76989 /* InventoryItem+Display.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -265,6 +411,12 @@
 				C856DA782EFB303800A14F89 /* ShopifyOAuthManager.swift */,
 				C8CB35272EF5FB2700C61FCE /* OrderNoteModel.swift */,
 				C8CB34FD2EF20D1E00C61FCE /* SalesHistoryDisplay.swift */,
+				C89082192F0772FB004BD9BE /* QuickBooksAutoSyncManager.swift */,
+				C890821B2F0774EB004BD9BE /* APP_ARCHITECTURE.md */,
+				C89082222F098214004BD9BE /* ASYNC_ARCHITECTURE.md */,
+				C89082242F09833C004BD9BE /* QuickBooksInventorySyncView.swift */,
+				C89082262F098372004BD9BE /* QUICKBOOKS_INVENTORY_SYNC_UI.md */,
+				C89082282F098457004BD9BE /* DUPLICATE_ITEMS_FIX.md */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -272,8 +424,6 @@
 		C8CB34F32EEF6AFF00C61FCE /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */,
-				C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */,
 				C8CB35082EF4BD7300C61FCE /* AccountSetupView.swift */,
 				C8CB35492EF74AD300C61FCE /* AddCustomerView.swift */,
 				C8FBB5272EEE0DBF001FC318 /* AddItemView.swift */,
@@ -283,14 +433,19 @@
 				C8AC48262EEE288C0088DD7D /* AddSalesView.swift */,
 				C8CB34D82EEF217900C61FCE /* BarcodeScannerView.swift */,
 				C8FBB52D2EEE0DD7001FC318 /* BarcodeView.swift */,
+				C89081E92F041BA4004BD9BE /* BUG_FIXES_SUMMARY.md */,
 				C8CB35512EF74B0800C61FCE /* CalendarView.swift */,
 				C8FBB5312EEE0DE8001FC318 /* CountingView.swift */,
 				C8CB35532EF74C1F00C61FCE /* CustomerDetailView.swift */,
 				C8CB35472EF74AC600C61FCE /* CustomersView.swift */,
 				C8CB34EC2EEF446100C61FCE /* DataManagementView.swift */,
+				C89081D72F03885A004BD9BE /* DuplicateDetectionReportView.swift */,
+				C89081D52F038833004BD9BE /* DuplicateIssue.swift */,
 				C8FBB5292EEE0DC7001FC318 /* EditItemView.swift */,
+				C8CB35122EF4F66400C61FCE /* EmptyStateView.swift */,
 				C8CB34E62EEF3F9400C61FCE /* ForecastDetailView.swift */,
 				C8FBB52B2EEE0DCE001FC318 /* ForecastingView.swift */,
+				C89081DD2F038939004BD9BE /* IMPLEMENTATION_SUMMARY.md */,
 				C8CB34E82EEF416100C61FCE /* InventoryGridView.swift */,
 				C8FBB5232EEE0DA6001FC318 /* InventoryView.swift */,
 				C87700B82EFC529B00E5E58A /* InvoiceDetailView.swift */,
@@ -302,16 +457,34 @@
 				C8CB351B2EF5054600C61FCE /* OrderRow.swift */,
 				C8CB35352EF7416E00C61FCE /* OrdersChartsView.swift */,
 				C8CB351F2EF5058600C61FCE /* OrdersView.swift */,
+				C89081EB2F041F9D004BD9BE /* PERFORMANCE_AUDIT.md */,
 				C8CB34DA2EEF222000C61FCE /* ProductDetailView.swift */,
 				C8CB35332EF7416100C61FCE /* ProductsChartsView.swift */,
+				C89081E52F04192D004BD9BE /* PROFIT_MARGIN_SUMMARY.md */,
+				C89081DF2F041884004BD9BE /* ProfitMarginAnalysis.swift */,
+				C89081E32F0418D2004BD9BE /* ProfitMarginCalculatorView.swift */,
+				C89081E12F0418B4004BD9BE /* ProfitMarginReportView.swift */,
+				C89082112F07445D004BD9BE /* QUICKBOOKS_DATA_SAFETY.md */,
+				C89082132F0763D1004BD9BE /* QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md */,
+				C87700C02EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift */,
+				C87700BC2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift */,
 				C8CB34E42EEF247400C61FCE /* QuickBooksSettingsView.swift */,
+				C89081D92F038880004BD9BE /* ReorderRecommendation.swift */,
+				C89081DB2F0388AB004BD9BE /* ReorderRecommendationsReportView.swift */,
+				C898E16D2F0368A6005FEE27 /* ReportsView.swift */,
 				C8AC48282EEE2C9A0088DD7D /* SalesHistoryView.swift */,
+				C89081ED2F0424DD004BD9BE /* SESSION_SUMMARY.md */,
 				C8CB34E02EEF244E00C61FCE /* SettingsNavigationView.swift */,
 				C8FBB5352EEE0DFD001FC318 /* SettingsView.swift */,
 				C856DA7A2EFB304B00A14F89 /* ShopifyOAuthView.swift */,
 				C8CB35012EF4B94800C61FCE /* ShopifyPermissionsView.swift */,
 				C8CB34E22EEF246300C61FCE /* ShopifySettingsView.swift */,
+				C89081E72F041AD6004BD9BE /* TESTING_CHECKLIST.md */,
 				C8CB35452EF746B200C61FCE /* ToolsView.swift */,
+				C81403B82F0A04CB00D76989 /* ARCHITECTURE_IMPROVEMENTS.md */,
+				C81403BA2F0A050900D76989 /* ReportConfig.swift */,
+				C81403BC2F0A056A00D76989 /* REFACTORING_REPORTS_SUMMARY.md */,
+				C81403BE2F0A097400D76989 /* DECIMAL_MIGRATION_INSTRUCTIONS.md */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -332,6 +505,18 @@
 				C8CB34F02EEF664A00C61FCE /* NetworkService.swift */,
 				C8CB34DE2EEF232F00C61FCE /* QuickBooksService.swift */,
 				C8FBB5192EEE0D69001FC318 /* ShopifyService.swift */,
+				C890822A2F09AF3F004BD9BE /* ARCHITECTURE.md */,
+				C890822E2F09B60F004BD9BE /* QuickScanView.swift */,
+				C89082302F09B641004BD9BE /* PutAwayInventoryView.swift */,
+				C89082322F09BB52004BD9BE /* TakeOutInventoryView.swift */,
+				C89082362F09BBB1004BD9BE /* QuickActionsBar.swift */,
+				C89082382F09BBD7004BD9BE /* InventoryView_Enhanced.swift */,
+				C890823C2F09BC89004BD9BE /* ARCHITECTURE_DIAGRAMS.md */,
+				C89082462F09C2E4004BD9BE /* PickItemSheet.swift */,
+				C89082482F09C4D5004BD9BE /* BarcodeToolsView.swift */,
+				C890824A2F09CB15004BD9BE /* CODING_STANDARDS.md */,
+				C890824C2F09D556004BD9BE /* OrientationManager.swift */,
+				C890824E2F09D575004BD9BE /* IPAD_ORIENTATION_SETUP.md */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -362,6 +547,12 @@
 				C8CB35232EF5FAD800C61FCE /* Sale+fulfillmentextensions.swift */,
 				C8CB34FF2EF210C800C61FCE /* Sale+Extensions.swift */,
 				C8CB34D42EEF213A00C61FCE /* InventoryItem+Extensions.swift */,
+				C898E16B2F03660D005FEE27 /* ProductNotesTagsView.swift */,
+				C89081CB2F0386C6004BD9BE /* ReportRow.swift */,
+				C89081CD2F0386CD004BD9BE /* ReportPlaceholder.swift */,
+				C89081CF2F0386D3004BD9BE /* ReportSummaryCard.swift */,
+				C89081D12F0386D9004BD9BE /* MetricRow.swift */,
+				C89081D32F0386FB004BD9BE /* InventoryValueReportView.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -430,8 +621,41 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C81403BF2F0A097400D76989 /* DECIMAL_MIGRATION_INSTRUCTIONS.md in Resources */,
+				C89081FE2F07184B004BD9BE /* QUICKBOOKS_PHASE3_APP_STORE_PREP.md in Resources */,
+				C890823D2F09BC89004BD9BE /* ARCHITECTURE_DIAGRAMS.md in Resources */,
+				C89081FA2F071605004BD9BE /* PERFORMANCE_FIX_DOUBLE_LOADING.md in Resources */,
+				C81403B92F0A04CB00D76989 /* ARCHITECTURE_IMPROVEMENTS.md in Resources */,
+				C890822B2F09AF3F004BD9BE /* ARCHITECTURE.md in Resources */,
 				C822587A2EE9057E0028BF7B /* Assets.xcassets in Resources */,
+				C89081E62F04192D004BD9BE /* PROFIT_MARGIN_SUMMARY.md in Resources */,
+				C890824B2F09CB15004BD9BE /* CODING_STANDARDS.md in Resources */,
+				C89082102F0742A2004BD9BE /* QUICKBOOKS_OAUTH_OVERVIEW.md in Resources */,
+				C89081EE2F0424DD004BD9BE /* SESSION_SUMMARY.md in Resources */,
+				C89082272F098372004BD9BE /* QUICKBOOKS_INVENTORY_SYNC_UI.md in Resources */,
+				C89082292F098457004BD9BE /* DUPLICATE_ITEMS_FIX.md in Resources */,
+				C89082122F07445D004BD9BE /* QUICKBOOKS_DATA_SAFETY.md in Resources */,
+				C89081EA2F041BA4004BD9BE /* BUG_FIXES_SUMMARY.md in Resources */,
+				C89081F82F0714BB004BD9BE /* QUICKBOOKS_CREDENTIALS_REFERENCE.md in Resources */,
+				C89081EC2F041F9D004BD9BE /* PERFORMANCE_AUDIT.md in Resources */,
+				C89082142F0763D1004BD9BE /* QUICKBOOKS_IMPLEMENTATION_CHECKLIST.md in Resources */,
+				C89082042F0721DD004BD9BE /* AZURE_INTEGRATION_COMPLETE.md in Resources */,
+				C89082082F0722A5004BD9BE /* DEPLOY_REFRESH_FUNCTION.md in Resources */,
+				C89081F22F071356004BD9BE /* INFO_PLIST_SETUP.md in Resources */,
+				C89081DE2F038939004BD9BE /* IMPLEMENTATION_SUMMARY.md in Resources */,
+				C890821C2F0774EB004BD9BE /* APP_ARCHITECTURE.md in Resources */,
+				C89082232F098214004BD9BE /* ASYNC_ARCHITECTURE.md in Resources */,
+				C89082022F071A33004BD9BE /* AZURE_FUNCTION_DEPLOYMENT_GUIDE.md in Resources */,
+				C89081F42F0713A5004BD9BE /* QUICKBOOKS_CLEANUP_SUMMARY.md in Resources */,
+				C890820A2F0741F0004BD9BE /* QUICKBOOKS_SETUP_CHECKLIST.md in Resources */,
+				C81403BD2F0A056A00D76989 /* REFACTORING_REPORTS_SUMMARY.md in Resources */,
+				C890824F2F09D575004BD9BE /* IPAD_ORIENTATION_SETUP.md in Resources */,
+				C89081FC2F071698004BD9BE /* QUICKBOOKS_PHASE2_ERROR_HANDLING.md in Resources */,
+				C89082002F071A07004BD9BE /* AzureFunction-QuickBooksTokenExchange.js in Resources */,
 				C8CB34FA2EEF6CDB00C61FCE /* AppIcon.svg in Resources */,
+				C89081F62F071425004BD9BE /* WMS-Suite-Info-UPDATED.plist in Resources */,
+				C89082062F072284004BD9BE /* AzureFunction-QuickBooksTokenRefresh.js in Resources */,
+				C89081E82F041AD6004BD9BE /* TESTING_CHECKLIST.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,11 +667,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				C8CB35282EF5FB2700C61FCE /* OrderNoteModel.swift in Sources */,
+				C890821A2F0772FB004BD9BE /* QuickBooksAutoSyncManager.swift in Sources */,
+				C89081D62F038833004BD9BE /* DuplicateIssue.swift in Sources */,
 				C8CB35202EF5058600C61FCE /* OrdersView.swift in Sources */,
 				C8CB34DB2EEF222200C61FCE /* ProductDetailView.swift in Sources */,
+				C89082392F09BBD7004BD9BE /* InventoryView_Enhanced.swift in Sources */,
 				C8CB34D92EEF217C00C61FCE /* BarcodeScannerView.swift in Sources */,
+				C89082182F077154004BD9BE /* AsyncBestPractices.swift in Sources */,
 				C822587B2EE9057E0028BF7B /* ContentView.swift in Sources */,
 				C8CB34D52EEF213F00C61FCE /* InventoryItem+Extensions.swift in Sources */,
+				C89082252F09833C004BD9BE /* QuickBooksInventorySyncView.swift in Sources */,
 				C8CB35002EF210D700C61FCE /* Sale+Extensions.swift in Sources */,
 				C8CB34FE2EF20D2D00C61FCE /* SalesHistoryDisplay.swift in Sources */,
 				C87700BD2EFC5B7000E5E58A /* QuickBooksInvoiceSyncView.swift in Sources */,
@@ -461,35 +690,50 @@
 				C8CB34E72EEF3F9600C61FCE /* ForecastDetailView.swift in Sources */,
 				C8CB351C2EF5054600C61FCE /* OrderRow.swift in Sources */,
 				C87700B72EFC528F00E5E58A /* InvoicesListView.swift in Sources */,
+				C89081CE2F0386CD004BD9BE /* ReportPlaceholder.swift in Sources */,
 				C8CB35362EF7416E00C61FCE /* OrdersChartsView.swift in Sources */,
 				C8CB35442EF746A300C61FCE /* Job+Extensions.swift in Sources */,
 				C8CB35482EF74AC600C61FCE /* CustomersView.swift in Sources */,
+				C89082372F09BBB1004BD9BE /* QuickActionsBar.swift in Sources */,
 				C8CB35052EF4BB0D00C61FCE /* QuickBooksTokenManager.swift in Sources */,
 				C8FBB5162EEE0D57001FC318 /* BarcodeService.swift in Sources */,
+				C89082162F077114004BD9BE /* LoadingView.swift in Sources */,
 				C8CB352A2EF6001800C61FCE /* AddOrderNoteView.swift in Sources */,
 				C8FBB5122EEE0D3B001FC318 /* InventoryRepository.swift in Sources */,
 				C822587D2EE9057E0028BF7B /* WMS_SuiteApp.swift in Sources */,
 				C8CB352C2EF6002A00C61FCE /* OrderNotesView.swift in Sources */,
+				C89081E42F0418D2004BD9BE /* ProfitMarginCalculatorView.swift in Sources */,
 				C8FBB5382EEE11F5001FC318 /* CameraManager.swift in Sources */,
 				C8FBB52C2EEE0DD3001FC318 /* ForecastingView.swift in Sources */,
+				C89081D42F0386FB004BD9BE /* InventoryValueReportView.swift in Sources */,
 				C8CB34DF2EEF233000C61FCE /* QuickBooksService.swift in Sources */,
 				C8CB35342EF7416100C61FCE /* ProductsChartsView.swift in Sources */,
 				C8FBB51E2EEE0D88001FC318 /* ForecastResult.swift in Sources */,
+				C898E16C2F03660D005FEE27 /* ProductNotesTagsView.swift in Sources */,
+				C89082312F09B641004BD9BE /* PutAwayInventoryView.swift in Sources */,
+				C89082472F09C2E4004BD9BE /* PickItemSheet.swift in Sources */,
+				C89081DC2F0388AB004BD9BE /* ReorderRecommendationsReportView.swift in Sources */,
+				C89081DA2F038880004BD9BE /* ReorderRecommendation.swift in Sources */,
 				C8CB35112EF4F65300C61FCE /* ActiveFiltersBar.swift in Sources */,
+				C89081D82F03885A004BD9BE /* DuplicateDetectionReportView.swift in Sources */,
 				C8FBB51A2EEE0D70001FC318 /* ShopifyService.swift in Sources */,
 				C8FBB5282EEE0DC4001FC318 /* AddItemView.swift in Sources */,
 				C8CB354E2EF74AEF00C61FCE /* JobDetailView.swift in Sources */,
 				C87700AB2EFB969C00E5E58A /* CustomerNote+extensions.swift in Sources */,
 				C8FBB5182EEE0D65001FC318 /* ShopifyServiceProtocol.swift in Sources */,
 				C8FBB5082EEE0CE3001FC318 /* PersistenceController.swift in Sources */,
+				C89082492F09C4D5004BD9BE /* BarcodeToolsView.swift in Sources */,
 				C8FBB5322EEE0DEF001FC318 /* CountingView.swift in Sources */,
 				C8CB351E2EF5055900C61FCE /* OrderDetailView.swift in Sources */,
 				C8CB34EB2EEF443800C61FCE /* ExportImportService.swift in Sources */,
 				C8CB35072EF4BCEE00C61FCE /* ShopifyPermissionsChecker.swift in Sources */,
+				C89081D02F0386D3004BD9BE /* ReportSummaryCard.swift in Sources */,
+				C89081E22F0418B4004BD9BE /* ProfitMarginReportView.swift in Sources */,
 				C8CB35462EF746B200C61FCE /* ToolsView.swift in Sources */,
 				C8FBB5202EEE0D91001FC318 /* BarcodeData.swift in Sources */,
 				C8FBB5342EEE0DFA001FC318 /* CameraViewWrapper.swift in Sources */,
 				C8FBB52E2EEE0DDB001FC318 /* BarcodeView.swift in Sources */,
+				C81403BB2F0A050900D76989 /* ReportConfig.swift in Sources */,
 				C856DA7B2EFB304B00A14F89 /* ShopifyOAuthView.swift in Sources */,
 				C87700C12EFC5C9E00E5E58A /* QuickBooksCustomerSyncView.swift in Sources */,
 				C8CB35242EF5FAE600C61FCE /* Sale+fulfillmentextensions.swift in Sources */,
@@ -499,26 +743,34 @@
 				C8CB34F12EEF664B00C61FCE /* NetworkService.swift in Sources */,
 				C8FBB5222EEE0D9E001FC318 /* InventoryViewModel.swift in Sources */,
 				C8CB350D2EF4F62D00C61FCE /* FilterButton.swift in Sources */,
+				C89081F02F071269004BD9BE /* KeychainHelper.swift in Sources */,
 				C8CB35502EF74AFD00C61FCE /* AddJobNoteView.swift in Sources */,
 				C8FBB5242EEE0DB0001FC318 /* InventoryView.swift in Sources */,
 				C8CB34DD2EEF232100C61FCE /* QuickBooksServiceProtocol.swift in Sources */,
 				C8CB34E52EEF247600C61FCE /* QuickBooksSettingsView.swift in Sources */,
 				C8CB34ED2EEF446300C61FCE /* DataManagementView.swift in Sources */,
 				C8CB354A2EF74AD300C61FCE /* AddCustomerView.swift in Sources */,
+				C898E16E2F0368A6005FEE27 /* ReportsView.swift in Sources */,
 				C8CB35422EF7467C00C61FCE /* Customer+extensions.swift in Sources */,
+				C89081CC2F0386C7004BD9BE /* ReportRow.swift in Sources */,
 				C87700A72EFB965900E5E58A /* Customer+quickbooks.swift in Sources */,
 				C8CB34E32EEF246400C61FCE /* ShopifySettingsView.swift in Sources */,
+				C89081D22F0386D9004BD9BE /* MetricRow.swift in Sources */,
 				C8CB35132EF4F66400C61FCE /* EmptyStateView.swift in Sources */,
 				C8CB35542EF74C1F00C61FCE /* CustomerDetailView.swift in Sources */,
+				C890822F2F09B60F004BD9BE /* QuickScanView.swift in Sources */,
 				C8FBB5102EEE0D2F001FC318 /* InventoryRepositoryProtocol.swift in Sources */,
 				C8AC48292EEE2C9D0088DD7D /* SalesHistoryView.swift in Sources */,
 				C8FBB52A2EEE0DCB001FC318 /* EditItemView.swift in Sources */,
+				C89081E02F041884004BD9BE /* ProfitMarginAnalysis.swift in Sources */,
 				C8FBB5142EEE0D4E001FC318 /* BarcodeServiceProtocol.swift in Sources */,
 				C8FBB5262EEE0DBC001FC318 /* InventoryRow.swift in Sources */,
+				C890824D2F09D556004BD9BE /* OrientationManager.swift in Sources */,
 				C8CB35522EF74B0800C61FCE /* CalendarView.swift in Sources */,
 				C87700A92EFB968400E5E58A /* Sale+Quickbooks.swift in Sources */,
 				C8CB350B2EF4F43100C61FCE /* InventorySortFilter.swift in Sources */,
 				C856DA792EFB303800A14F89 /* ShopifyOAuthManager.swift in Sources */,
+				C89082332F09BB52004BD9BE /* TakeOutInventoryView.swift in Sources */,
 				C8FBB5362EEE0E01001FC318 /* SettingsView.swift in Sources */,
 				C8AC48272EEE288F0088DD7D /* AddSalesView.swift in Sources */,
 				C8CB34E12EEF245000C61FCE /* SettingsNavigationView.swift in Sources */,
@@ -658,7 +910,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -676,7 +928,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.YoungSlns.WMS-Suite";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -692,7 +944,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 5ZD8D4P3TS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -710,7 +962,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0;
+				MARKETING_VERSION = 3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.YoungSlns.WMS-Suite";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

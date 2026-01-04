@@ -239,6 +239,12 @@ class ShopifyService: ShopifyServiceProtocol {
                 continue
             }
             
+            // Extract selling price from Shopify
+            var sellingPrice: Decimal? = nil
+            if let priceString = variantNode["price"] as? String {
+                sellingPrice = Decimal(string: priceString)
+            }
+            
             // Check if item exists in database
             if let localItem = freshItems.first(where: { $0.sku == sku }) {
                 // Update existing item
@@ -256,6 +262,12 @@ class ShopifyService: ShopifyServiceProtocol {
                 
                 if localItem.imageUrl != imageUrl {
                     localItem.imageUrl = imageUrl
+                    needsUpdate = true
+                }
+                
+                // Update selling price if available (Shopify-specific)
+                if let price = sellingPrice, localItem.shopifyPrice != price {
+                    localItem.shopifyPrice = price
                     needsUpdate = true
                 }
                 
@@ -285,6 +297,12 @@ class ShopifyService: ShopifyServiceProtocol {
                 
                 newItem.shopifyProductId = productId
                 newItem.lastSyncedShopifyDate = Date()
+                
+                // Set selling price if available (Shopify-specific)
+                if let price = sellingPrice {
+                    newItem.shopifyPrice = price
+                }
+                
                 try await repo.updateItem(newItem)
                 
                 itemCreated = true
@@ -699,21 +717,35 @@ class ShopifyService: ShopifyServiceProtocol {
                 return SalesHistoryDisplay(
                     saleDate: sale.saleDate,
                     orderNumber: sale.orderNumber,
-                    quantity: lineItem.quantity
+                    quantity: {
+                        // Convert NSDecimalNumber? to Int32
+                        if let decimalNumber = lineItem.quantity as? NSDecimalNumber {
+                            return Int32(truncating: decimalNumber)
+                        } else if let decimal = lineItem.quantity as? Decimal {
+                            return Int32(truncating: NSDecimalNumber(decimal: decimal))
+                        }
+                        return 0
+                    }()
                 )
             }
         }
         
         allSales.append(contentsOf: localSales)
         
-        // 2. Fetch from Shopify (if credentials are configured)
-        if !accessToken.isEmpty && !storeUrl.isEmpty {
-            do {
-                let shopifySales = try await fetchShopifySales(for: item, context: context)
-                allSales.append(contentsOf: shopifySales)
-            } catch {
-                print("Shopify sales fetch failed: \(error.localizedDescription)")
-            }
+        // 2. Fetch from Shopify (only if properly configured)
+        // Don't attempt Shopify fetch if credentials are missing
+        guard !accessToken.isEmpty, !storeUrl.isEmpty, accessToken != "mock_token" else {
+            // Silently return local sales only - Shopify not configured
+            return allSales
+        }
+        
+        // Try to fetch from Shopify, but don't fail if it doesn't work
+        do {
+            let shopifySales = try await fetchShopifySales(for: item, context: context)
+            allSales.append(contentsOf: shopifySales)
+        } catch {
+            // Log but don't throw - we can still use local sales data
+            print("⚠️ Shopify sales unavailable (using local data only): \(error.localizedDescription)")
         }
         
         return allSales
@@ -729,9 +761,15 @@ class ShopifyService: ShopifyServiceProtocol {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        // Calculate date 90 days ago in proper format
+        let calendar = Calendar.current
+        let date90DaysAgo = calendar.date(byAdding: .day, value: -90, to: Date()) ?? Date()
+        let dateFormatter = ISO8601DateFormatter()
+        let formattedDate = dateFormatter.string(from: date90DaysAgo)
+        
         let query = """
         {
-            orders(first: 100, query: "created_at:>-90d") {
+            orders(first: 100, query: "created_at:>=\(formattedDate)") {
                 edges {
                     node {
                         id
@@ -755,34 +793,66 @@ class ShopifyService: ShopifyServiceProtocol {
         
         let (data, _) = try await makeAuthenticatedRequest(request)
         
-        guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let dataDict = result["data"] as? [String: Any],
-              let ordersDict = dataDict["orders"] as? [String: Any],
-              let edges = ordersDict["edges"] as? [[String: Any]] else {
+        // More detailed error logging
+        guard let result = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            print("❌ Shopify response is not a dictionary")
             throw ShopifyError.parseError
         }
+        
+        // Check for GraphQL errors first
+        if let errors = result["errors"] as? [[String: Any]] {
+            let errorMessages = errors.compactMap { $0["message"] as? String }.joined(separator: ", ")
+            print("❌ Shopify GraphQL errors: \(errorMessages)")
+            throw ShopifyError.apiError(errorMessages)
+        }
+        
+        guard let dataDict = result["data"] as? [String: Any] else {
+            print("❌ Shopify response missing 'data' field")
+            print("📦 Response: \(result)")
+            throw ShopifyError.parseError
+        }
+        
+        guard let ordersDict = dataDict["orders"] as? [String: Any] else {
+            print("❌ Shopify response missing 'orders' field")
+            throw ShopifyError.parseError
+        }
+        
+        guard let edges = ordersDict["edges"] as? [[String: Any]] else {
+            print("❌ Shopify response missing 'edges' field")
+            throw ShopifyError.parseError
+        }
+        
+        print("✅ Shopify returned \(edges.count) orders")
         
         var salesHistory: [SalesHistoryDisplay] = []
         
         for edge in edges {
-            guard let node = edge["node"] as? [String: Any],
-                  let orderName = node["name"] as? String,
-                  let createdAtString = node["createdAt"] as? String,
-                  let lineItemsDict = node["lineItems"] as? [String: Any],
-                  let lineItemEdges = lineItemsDict["edges"] as? [[String: Any]] else {
-                continue
-            }
+            guard let node = edge["node"] as? [String: Any] else { continue }
+            
+            // Safely extract fields with defaults
+            let orderName = node["name"] as? String ?? "Unknown"
+            let createdAtString = node["createdAt"] as? String ?? ""
             
             let dateFormatter = ISO8601DateFormatter()
             let saleDate = dateFormatter.date(from: createdAtString) ?? Date()
             
+            guard let lineItemsDict = node["lineItems"] as? [String: Any],
+                  let lineItemEdges = lineItemsDict["edges"] as? [[String: Any]] else {
+                continue
+            }
+            
             for lineItemEdge in lineItemEdges {
-                guard let lineItemNode = lineItemEdge["node"] as? [String: Any],
-                      let itemSku = lineItemNode["sku"] as? String,
-                      let quantity = lineItemNode["quantity"] as? Int,
+                guard let lineItemNode = lineItemEdge["node"] as? [String: Any] else { continue }
+                
+                // Safely extract SKU and quantity
+                guard let itemSku = lineItemNode["sku"] as? String,
+                      !itemSku.isEmpty,
                       itemSku == sku else {
                     continue
                 }
+                
+                let quantity = lineItemNode["quantity"] as? Int ?? 0
+                guard quantity > 0 else { continue }
                 
                 salesHistory.append(SalesHistoryDisplay(
                     saleDate: saleDate,
@@ -791,6 +861,8 @@ class ShopifyService: ShopifyServiceProtocol {
                 ))
             }
         }
+        
+        print("✅ Found \(salesHistory.count) sales for SKU: \(sku)")
         
         return salesHistory
     }

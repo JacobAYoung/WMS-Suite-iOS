@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24C5089c" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24512" systemVersion="25D5087f" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="AppSettings" representedClassName="AppSettings" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="shopifyAccessToken" optional="YES" attributeType="String"/>
@@ -39,12 +39,16 @@
         <attribute name="lastSyncedQuickbooksDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastSyncedShopifyDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="minStockLevel" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="minStockLevel" optional="YES" attributeType="Decimal" defaultValueString="0"/>
         <attribute name="name" optional="YES" attributeType="String"/>
-        <attribute name="quantity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="quantity" optional="YES" attributeType="Decimal" defaultValueString="0"/>
+        <attribute name="quickbooksAssetAccountId" optional="YES" attributeType="String"/>
+        <attribute name="quickbooksExpenseAccountId" optional="YES" attributeType="String"/>
+        <attribute name="quickbooksIncomeAccountId" optional="YES" attributeType="String"/>
         <attribute name="quickbooksItemId" optional="YES" attributeType="String"/>
         <attribute name="shopifyProductId" optional="YES" attributeType="String"/>
         <attribute name="sku" optional="YES" attributeType="String"/>
+        <attribute name="unitOfMeasure" optional="YES" attributeType="String" defaultValueString="pieces"/>
         <attribute name="upc" optional="YES" attributeType="String"/>
         <attribute name="webSKU" optional="YES" attributeType="String"/>
         <relationship name="saleLineItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SaleLineItem" inverseName="item" inverseEntity="SaleLineItem"/>
@@ -119,7 +123,7 @@
     <entity name="SaleLineItem" representedClassName="SaleLineItem" syncable="YES" codeGenerationType="class">
         <attribute name="id" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lineTotal" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
-        <attribute name="quantity" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="quantity" optional="YES" attributeType="Decimal" defaultValueString="0"/>
         <attribute name="unitPrice" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <relationship name="item" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="InventoryItem" inverseName="saleLineItems" inverseEntity="InventoryItem"/>
         <relationship name="sale" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Sale" inverseName="lineItems" inverseEntity="Sale"/>
